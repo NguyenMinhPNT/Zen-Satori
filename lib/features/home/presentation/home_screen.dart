@@ -26,10 +26,10 @@ class HomeScreen extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.centerRight,
-                child: IconButton(
-                  tooltip: 'Settings',
-                  onPressed: () => context.go('/settings'),
-                  icon: const Icon(Icons.settings_outlined, size: 30),
+                child: SizedBox(
+                  width: 96,
+                  height: 96,
+                  child: Image.asset(AppAssets.trien, fit: BoxFit.contain),
                 ),
               ),
               _ProjectSelector(state: state),

@@ -74,6 +74,7 @@ flutter:
     - assets/images/lotus.png
     - assets/images/start_session_button.png
     - assets/images/tap_to_begin_button.png
+    - assets/images/triện.png
 
   fonts:
     - family: KaushanScript
