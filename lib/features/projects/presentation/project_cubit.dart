@@ -103,6 +103,27 @@ class ProjectCubit extends Cubit<ProjectState> {
     emit(state.copyWith(selectedProjectId: id));
   }
 
+  Future<void> updateProject({
+    required int id,
+    required String title,
+    required int targetHours,
+    required ProjectStatus status,
+  }) {
+    return _repository.updateProject(
+      id: id,
+      title: title,
+      targetMinutes: targetHours * 60,
+      status: status,
+    );
+  }
+
+  Future<void> deleteProject(int id) async {
+    await _repository.deleteProject(id);
+    if (state.selectedProjectId == id) {
+      emit(state.copyWith(clearSelectedProject: true));
+    }
+  }
+
   @override
   Future<void> close() async {
     await _subscription.cancel();

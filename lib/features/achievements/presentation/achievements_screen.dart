@@ -27,7 +27,7 @@ class AchievementsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const ZenHeader(title: 'Achievements'),
+          const ZenHeader(title: 'Achievements', showBack: false),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),

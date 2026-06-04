@@ -17,7 +17,7 @@ class StatsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const ZenHeader(title: 'Stats'),
+          const ZenHeader(title: 'Stats', showBack: false),
           Expanded(
             child: StreamBuilder<List<FocusSession>>(
               stream: context.read<SessionRepository>().watchSessions(),

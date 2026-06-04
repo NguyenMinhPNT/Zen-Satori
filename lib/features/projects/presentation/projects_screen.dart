@@ -21,6 +21,7 @@ class ProjectsScreen extends StatelessWidget {
         children: [
           ZenHeader(
             title: 'Projects',
+            showBack: false,
             trailing: IconButton(
               tooltip: 'Add project',
               onPressed: () => showProjectFormSheet(context),
@@ -82,9 +83,8 @@ class ProjectsScreen extends StatelessWidget {
                         ),
                       ),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () => context.read<ProjectCubit>().selectProject(
-                        project.id,
-                      ),
+                      onTap: () =>
+                          showProjectFormSheet(context, project: project),
                     );
                   },
                 );

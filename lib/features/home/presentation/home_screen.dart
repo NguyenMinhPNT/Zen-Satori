@@ -52,10 +52,15 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               if (selectedProject == null)
-                FilledButton.icon(
-                  onPressed: () => showProjectFormSheet(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Create Project'),
+                Center(
+                  child: SizedBox(
+                    width: 180,
+                    child: FilledButton.icon(
+                      onPressed: () => showProjectFormSheet(context),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create Project'),
+                    ),
+                  ),
                 )
               else
                 Text(

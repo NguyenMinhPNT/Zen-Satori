@@ -15,7 +15,7 @@ class SettingsScreen extends StatelessWidget {
       currentIndex: 4,
       child: Column(
         children: [
-          const ZenHeader(title: 'Settings'),
+          const ZenHeader(title: 'Settings', showBack: false),
           Expanded(
             child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, state) {

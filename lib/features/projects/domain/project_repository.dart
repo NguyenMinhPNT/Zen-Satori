@@ -38,4 +38,28 @@ class ProjectRepository {
           ),
         );
   }
+
+  Future<void> updateProject({
+    required int id,
+    required String title,
+    required int targetMinutes,
+    required ProjectStatus status,
+  }) {
+    return (_database.update(_database.projects)
+          ..where((p) => p.id.equals(id)))
+        .write(
+          ProjectsCompanion(
+            title: Value(title.trim()),
+            targetMinutes: Value(targetMinutes),
+            status: Value(status.label),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+  }
+
+  Future<void> deleteProject(int id) {
+    return (_database.delete(_database.projects)
+          ..where((p) => p.id.equals(id)))
+        .go();
+  }
 }
