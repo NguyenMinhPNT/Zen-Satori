@@ -56,11 +56,11 @@ class _InkBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const items = [
-      (Icons.radio_button_unchecked, 'Work'),
-      (Icons.folder_outlined, 'Projects'),
-      (Icons.bar_chart, 'Stats'),
-      (Icons.emoji_events_outlined, 'Achievements'),
-      (Icons.settings_outlined, 'Settings'),
+      (Icons.work_outline, Icons.work, 'Work'),
+      (Icons.folder_outlined, Icons.folder, 'Projects'),
+      (Icons.bar_chart_outlined, Icons.bar_chart, 'Stats'),
+      (Icons.emoji_events_outlined, Icons.emoji_events, 'Achievements'),
+      (Icons.settings_outlined, Icons.settings, 'Settings'),
     ];
 
     return Padding(
@@ -76,34 +76,56 @@ class _InkBottomNav extends StatelessWidget {
               children: [
                 for (var index = 0; index < items.length; index += 1)
                   Expanded(
-                    child: InkWell(
-                      onTap: () => onTap(index),
-                      borderRadius: BorderRadius.circular(6),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            items[index].$1,
-                            color: index == currentIndex
-                                ? AppTheme.paper
-                                : AppTheme.mist,
-                            size: 25,
-                          ),
-                          const SizedBox(height: 3),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              items[index].$2,
-                              style: TextStyle(
-                                color: index == currentIndex
-                                    ? AppTheme.paper
-                                    : AppTheme.mist,
-                                fontSize: 11,
-                                letterSpacing: 0,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        color: index == currentIndex
+                            ? AppTheme.paper.withValues(alpha: 0.10)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        border: index == currentIndex
+                            ? Border.all(
+                                color: AppTheme.sage.withValues(alpha: 0.35),
+                                width: 1,
+                              )
+                            : null,
+                      ),
+                      child: InkWell(
+                        onTap: () => onTap(index),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              index == currentIndex
+                                  ? items[index].$2
+                                  : items[index].$1,
+                              color: index == currentIndex
+                                  ? AppTheme.paper
+                                  : AppTheme.mist,
+                              size: index == currentIndex ? 27 : 24,
+                            ),
+                            const SizedBox(height: 3),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                items[index].$3,
+                                style: TextStyle(
+                                  color: index == currentIndex
+                                      ? AppTheme.paper
+                                      : AppTheme.mist,
+                                  fontSize: 11,
+                                  fontWeight: index == currentIndex
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  letterSpacing: 0,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
