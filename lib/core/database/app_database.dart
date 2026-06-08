@@ -10,8 +10,11 @@ part 'app_database.g.dart';
 class Projects extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
-  IntColumn get targetMinutes => integer()();
-  TextColumn get status => text()();
+  IntColumn get targetMinutes => integer().withDefault(const Constant(0))();
+  TextColumn get status => text().withDefault(const Constant('ongoing'))();
+  TextColumn get detail => text().nullable()();
+  DateTimeColumn get startDate => dateTime().nullable()();
+  DateTimeColumn get deadline => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
@@ -39,7 +42,36 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          await m.addColumn(projects, projects.detail);
+          await m.addColumn(projects, projects.startDate);
+          await m.addColumn(projects, projects.deadline);
+        }
+        if (from < 3) {
+          final projectColumns = await customSelect(
+            'PRAGMA table_info(projects)',
+          ).get();
+          final columnNames = projectColumns
+              .map((row) => row.data['name'] as String?)
+              .whereType<String>()
+              .toSet();
+
+          if (!columnNames.contains('target_minutes')) {
+            await m.addColumn(projects, projects.targetMinutes);
+          }
+          if (!columnNames.contains('status')) {
+            await m.addColumn(projects, projects.status);
+          }
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection() {

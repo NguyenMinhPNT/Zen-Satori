@@ -22,19 +22,24 @@ class ProjectRepository {
 
   Future<int> createProject({
     required String title,
-    required int targetMinutes,
-    ProjectStatus status = ProjectStatus.ongoing,
+    String? detail,
+    DateTime? startDate,
+    DateTime? deadline,
+    int? targetMinutes,
   }) {
     final now = DateTime.now();
     return _database
         .into(_database.projects)
         .insert(
-          ProjectsCompanion.insert(
-            title: title.trim(),
-            targetMinutes: targetMinutes,
-            status: status.label,
-            createdAt: now,
-            updatedAt: now,
+          ProjectsCompanion(
+            title: Value(title.trim()),
+            targetMinutes: Value(targetMinutes ?? 0),
+            status: Value(ProjectStatus.ongoing.label),
+            detail: Value(detail),
+            startDate: Value(startDate),
+            deadline: Value(deadline),
+            createdAt: Value(now),
+            updatedAt: Value(now),
           ),
         );
   }
@@ -42,24 +47,28 @@ class ProjectRepository {
   Future<void> updateProject({
     required int id,
     required String title,
-    required int targetMinutes,
     required ProjectStatus status,
+    String? detail,
+    DateTime? startDate,
+    DateTime? deadline,
   }) {
-    return (_database.update(_database.projects)
-          ..where((p) => p.id.equals(id)))
-        .write(
-          ProjectsCompanion(
-            title: Value(title.trim()),
-            targetMinutes: Value(targetMinutes),
-            status: Value(status.label),
-            updatedAt: Value(DateTime.now()),
-          ),
-        );
+    return (_database.update(
+      _database.projects,
+    )..where((p) => p.id.equals(id))).write(
+      ProjectsCompanion(
+        title: Value(title.trim()),
+        status: Value(status.label),
+        detail: Value(detail),
+        startDate: Value(startDate),
+        deadline: Value(deadline),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
   }
 
   Future<void> deleteProject(int id) {
-    return (_database.delete(_database.projects)
-          ..where((p) => p.id.equals(id)))
-        .go();
+    return (_database.delete(
+      _database.projects,
+    )..where((p) => p.id.equals(id))).go();
   }
 }

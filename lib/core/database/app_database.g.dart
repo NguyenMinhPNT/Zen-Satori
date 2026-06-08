@@ -39,7 +39,8 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     aliasedName,
     false,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
@@ -48,7 +49,39 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('ongoing'),
+  );
+  static const VerificationMeta _detailMeta = const VerificationMeta('detail');
+  @override
+  late final GeneratedColumn<String> detail = GeneratedColumn<String>(
+    'detail',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
+    'start_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deadlineMeta = const VerificationMeta(
+    'deadline',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deadline = GeneratedColumn<DateTime>(
+    'deadline',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -78,6 +111,9 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     title,
     targetMinutes,
     status,
+    detail,
+    startDate,
+    deadline,
     createdAt,
     updatedAt,
   ];
@@ -112,16 +148,30 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
           _targetMinutesMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_targetMinutesMeta);
     }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
-    } else if (isInserting) {
-      context.missing(_statusMeta);
+    }
+    if (data.containsKey('detail')) {
+      context.handle(
+        _detailMeta,
+        detail.isAcceptableOrUnknown(data['detail']!, _detailMeta),
+      );
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    }
+    if (data.containsKey('deadline')) {
+      context.handle(
+        _deadlineMeta,
+        deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
+      );
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -164,6 +214,18 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      detail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}detail'],
+      ),
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_date'],
+      ),
+      deadline: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deadline'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -186,6 +248,9 @@ class Project extends DataClass implements Insertable<Project> {
   final String title;
   final int targetMinutes;
   final String status;
+  final String? detail;
+  final DateTime? startDate;
+  final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Project({
@@ -193,6 +258,9 @@ class Project extends DataClass implements Insertable<Project> {
     required this.title,
     required this.targetMinutes,
     required this.status,
+    this.detail,
+    this.startDate,
+    this.deadline,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -203,6 +271,15 @@ class Project extends DataClass implements Insertable<Project> {
     map['title'] = Variable<String>(title);
     map['target_minutes'] = Variable<int>(targetMinutes);
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || detail != null) {
+      map['detail'] = Variable<String>(detail);
+    }
+    if (!nullToAbsent || startDate != null) {
+      map['start_date'] = Variable<DateTime>(startDate);
+    }
+    if (!nullToAbsent || deadline != null) {
+      map['deadline'] = Variable<DateTime>(deadline);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -214,6 +291,15 @@ class Project extends DataClass implements Insertable<Project> {
       title: Value(title),
       targetMinutes: Value(targetMinutes),
       status: Value(status),
+      detail: detail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(detail),
+      startDate: startDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startDate),
+      deadline: deadline == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deadline),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -229,6 +315,9 @@ class Project extends DataClass implements Insertable<Project> {
       title: serializer.fromJson<String>(json['title']),
       targetMinutes: serializer.fromJson<int>(json['targetMinutes']),
       status: serializer.fromJson<String>(json['status']),
+      detail: serializer.fromJson<String?>(json['detail']),
+      startDate: serializer.fromJson<DateTime?>(json['startDate']),
+      deadline: serializer.fromJson<DateTime?>(json['deadline']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -241,6 +330,9 @@ class Project extends DataClass implements Insertable<Project> {
       'title': serializer.toJson<String>(title),
       'targetMinutes': serializer.toJson<int>(targetMinutes),
       'status': serializer.toJson<String>(status),
+      'detail': serializer.toJson<String?>(detail),
+      'startDate': serializer.toJson<DateTime?>(startDate),
+      'deadline': serializer.toJson<DateTime?>(deadline),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -251,6 +343,9 @@ class Project extends DataClass implements Insertable<Project> {
     String? title,
     int? targetMinutes,
     String? status,
+    Value<String?> detail = const Value.absent(),
+    Value<DateTime?> startDate = const Value.absent(),
+    Value<DateTime?> deadline = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Project(
@@ -258,6 +353,9 @@ class Project extends DataClass implements Insertable<Project> {
     title: title ?? this.title,
     targetMinutes: targetMinutes ?? this.targetMinutes,
     status: status ?? this.status,
+    detail: detail.present ? detail.value : this.detail,
+    startDate: startDate.present ? startDate.value : this.startDate,
+    deadline: deadline.present ? deadline.value : this.deadline,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -269,6 +367,9 @@ class Project extends DataClass implements Insertable<Project> {
           ? data.targetMinutes.value
           : this.targetMinutes,
       status: data.status.present ? data.status.value : this.status,
+      detail: data.detail.present ? data.detail.value : this.detail,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      deadline: data.deadline.present ? data.deadline.value : this.deadline,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -281,6 +382,9 @@ class Project extends DataClass implements Insertable<Project> {
           ..write('title: $title, ')
           ..write('targetMinutes: $targetMinutes, ')
           ..write('status: $status, ')
+          ..write('detail: $detail, ')
+          ..write('startDate: $startDate, ')
+          ..write('deadline: $deadline, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -288,8 +392,17 @@ class Project extends DataClass implements Insertable<Project> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, title, targetMinutes, status, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    targetMinutes,
+    status,
+    detail,
+    startDate,
+    deadline,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -298,6 +411,9 @@ class Project extends DataClass implements Insertable<Project> {
           other.title == this.title &&
           other.targetMinutes == this.targetMinutes &&
           other.status == this.status &&
+          other.detail == this.detail &&
+          other.startDate == this.startDate &&
+          other.deadline == this.deadline &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -307,6 +423,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<String> title;
   final Value<int> targetMinutes;
   final Value<String> status;
+  final Value<String?> detail;
+  final Value<DateTime?> startDate;
+  final Value<DateTime?> deadline;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const ProjectsCompanion({
@@ -314,19 +433,23 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.title = const Value.absent(),
     this.targetMinutes = const Value.absent(),
     this.status = const Value.absent(),
+    this.detail = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.deadline = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
   ProjectsCompanion.insert({
     this.id = const Value.absent(),
     required String title,
-    required int targetMinutes,
-    required String status,
+    this.targetMinutes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.detail = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.deadline = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : title = Value(title),
-       targetMinutes = Value(targetMinutes),
-       status = Value(status),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<Project> custom({
@@ -334,6 +457,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Expression<String>? title,
     Expression<int>? targetMinutes,
     Expression<String>? status,
+    Expression<String>? detail,
+    Expression<DateTime>? startDate,
+    Expression<DateTime>? deadline,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -342,6 +468,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       if (title != null) 'title': title,
       if (targetMinutes != null) 'target_minutes': targetMinutes,
       if (status != null) 'status': status,
+      if (detail != null) 'detail': detail,
+      if (startDate != null) 'start_date': startDate,
+      if (deadline != null) 'deadline': deadline,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -352,6 +481,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Value<String>? title,
     Value<int>? targetMinutes,
     Value<String>? status,
+    Value<String?>? detail,
+    Value<DateTime?>? startDate,
+    Value<DateTime?>? deadline,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -360,6 +492,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       title: title ?? this.title,
       targetMinutes: targetMinutes ?? this.targetMinutes,
       status: status ?? this.status,
+      detail: detail ?? this.detail,
+      startDate: startDate ?? this.startDate,
+      deadline: deadline ?? this.deadline,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -380,6 +515,15 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (detail.present) {
+      map['detail'] = Variable<String>(detail.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<DateTime>(startDate.value);
+    }
+    if (deadline.present) {
+      map['deadline'] = Variable<DateTime>(deadline.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -396,6 +540,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
           ..write('title: $title, ')
           ..write('targetMinutes: $targetMinutes, ')
           ..write('status: $status, ')
+          ..write('detail: $detail, ')
+          ..write('startDate: $startDate, ')
+          ..write('deadline: $deadline, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1238,8 +1385,11 @@ typedef $$ProjectsTableCreateCompanionBuilder =
     ProjectsCompanion Function({
       Value<int> id,
       required String title,
-      required int targetMinutes,
-      required String status,
+      Value<int> targetMinutes,
+      Value<String> status,
+      Value<String?> detail,
+      Value<DateTime?> startDate,
+      Value<DateTime?> deadline,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
@@ -1249,6 +1399,9 @@ typedef $$ProjectsTableUpdateCompanionBuilder =
       Value<String> title,
       Value<int> targetMinutes,
       Value<String> status,
+      Value<String?> detail,
+      Value<DateTime?> startDate,
+      Value<DateTime?> deadline,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -1302,6 +1455,21 @@ class $$ProjectsTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get detail => $composableBuilder(
+    column: $table.detail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deadline => $composableBuilder(
+    column: $table.deadline,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1370,6 +1538,21 @@ class $$ProjectsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get detail => $composableBuilder(
+    column: $table.detail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deadline => $composableBuilder(
+    column: $table.deadline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -1403,6 +1586,15 @@ class $$ProjectsTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get detail =>
+      $composableBuilder(column: $table.detail, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deadline =>
+      $composableBuilder(column: $table.deadline, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1468,6 +1660,9 @@ class $$ProjectsTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<int> targetMinutes = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> detail = const Value.absent(),
+                Value<DateTime?> startDate = const Value.absent(),
+                Value<DateTime?> deadline = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => ProjectsCompanion(
@@ -1475,6 +1670,9 @@ class $$ProjectsTableTableManager
                 title: title,
                 targetMinutes: targetMinutes,
                 status: status,
+                detail: detail,
+                startDate: startDate,
+                deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -1482,8 +1680,11 @@ class $$ProjectsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String title,
-                required int targetMinutes,
-                required String status,
+                Value<int> targetMinutes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> detail = const Value.absent(),
+                Value<DateTime?> startDate = const Value.absent(),
+                Value<DateTime?> deadline = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => ProjectsCompanion.insert(
@@ -1491,6 +1692,9 @@ class $$ProjectsTableTableManager
                 title: title,
                 targetMinutes: targetMinutes,
                 status: status,
+                detail: detail,
+                startDate: startDate,
+                deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

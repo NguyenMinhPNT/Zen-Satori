@@ -10,7 +10,9 @@ enum ProjectStatus {
 
   static ProjectStatus fromLabel(String value) {
     return ProjectStatus.values.firstWhere(
-      (status) => status.label == value,
+      (status) =>
+          status.label.toLowerCase() == value.toLowerCase() ||
+          status.name.toLowerCase() == value.toLowerCase(),
       orElse: () => ProjectStatus.ongoing,
     );
   }

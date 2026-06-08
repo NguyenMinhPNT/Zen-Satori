@@ -20,13 +20,19 @@ class ProjectState extends Equatable {
   final String query;
   final bool isLoading;
 
+  List<Project> get ongoingProjects {
+    return projects.where((project) {
+      return ProjectStatus.fromLabel(project.status) == ProjectStatus.ongoing;
+    }).toList();
+  }
+
   Project? get selectedProject {
-    for (final project in projects) {
+    for (final project in ongoingProjects) {
       if (project.id == selectedProjectId) {
         return project;
       }
     }
-    return projects.isEmpty ? null : projects.first;
+    return ongoingProjects.isEmpty ? null : ongoingProjects.first;
   }
 
   List<Project> get filteredProjects {
@@ -69,20 +75,34 @@ class ProjectCubit extends Cubit<ProjectState> {
   late final StreamSubscription<List<Project>> _subscription;
 
   void _onProjectsChanged(List<Project> projects) {
-    final selectedExists = projects.any((project) {
+    final ongoingProjects = projects.where((project) {
+      return ProjectStatus.fromLabel(project.status) == ProjectStatus.ongoing;
+    }).toList();
+    final selectedExists = ongoingProjects.any((project) {
       return project.id == state.selectedProjectId;
     });
+    final selectedProjectId = selectedExists
+        ? state.selectedProjectId
+        : ongoingProjects.isEmpty
+        ? null
+        : ongoingProjects.first.id;
     emit(
       state.copyWith(
         projects: projects,
-        selectedProjectId: selectedExists ? state.selectedProjectId : null,
-        clearSelectedProject: !selectedExists,
+        selectedProjectId: selectedProjectId,
+        clearSelectedProject: selectedProjectId == null,
         isLoading: false,
       ),
     );
   }
 
   void selectProject(int projectId) {
+    final isOngoingProject = state.ongoingProjects.any((project) {
+      return project.id == projectId;
+    });
+    if (!isOngoingProject) {
+      return;
+    }
     emit(state.copyWith(selectedProjectId: projectId));
   }
 
@@ -92,13 +112,15 @@ class ProjectCubit extends Cubit<ProjectState> {
 
   Future<void> createProject({
     required String title,
-    required int targetHours,
-    ProjectStatus status = ProjectStatus.ongoing,
+    String? detail,
+    DateTime? startDate,
+    DateTime? deadline,
   }) async {
     final id = await _repository.createProject(
       title: title,
-      targetMinutes: targetHours * 60,
-      status: status,
+      detail: detail,
+      startDate: startDate,
+      deadline: deadline,
     );
     emit(state.copyWith(selectedProjectId: id));
   }
@@ -106,14 +128,18 @@ class ProjectCubit extends Cubit<ProjectState> {
   Future<void> updateProject({
     required int id,
     required String title,
-    required int targetHours,
     required ProjectStatus status,
+    String? detail,
+    DateTime? startDate,
+    DateTime? deadline,
   }) {
     return _repository.updateProject(
       id: id,
       title: title,
-      targetMinutes: targetHours * 60,
       status: status,
+      detail: detail,
+      startDate: startDate,
+      deadline: deadline,
     );
   }
 

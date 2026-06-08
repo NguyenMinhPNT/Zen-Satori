@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/assets/app_assets.dart';
+import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/project_status_chip.dart';
 import '../../../core/widgets/zen_app_scaffold.dart';
 import '../../../core/widgets/zen_header.dart';
+import '../../timer/domain/session_repository.dart';
 import '../domain/project_status.dart';
 import 'project_cubit.dart';
 import 'widgets/project_form_sheet.dart';
@@ -54,37 +56,58 @@ class ProjectsScreen extends StatelessWidget {
                     onCreate: () => showProjectFormSheet(context),
                   );
                 }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(18, 0, 18, 110),
-                  itemCount: projects.length,
-                  separatorBuilder: (_, _) => Divider(
-                    height: 1,
-                    color: AppTheme.ink.withValues(alpha: 0.22),
-                  ),
-                  itemBuilder: (context, index) {
-                    final project = projects[index];
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Image.asset(AppAssets.bamboo, width: 54),
-                      title: Text(
-                        '${project.title} (${project.targetMinutes ~/ 60}h)',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 17,
-                        ),
+
+                return StreamBuilder<List<FocusSession>>(
+                  stream: context.read<SessionRepository>().watchSessions(),
+                  builder: (context, snapshot) {
+                    final sessions = snapshot.data ?? const <FocusSession>[];
+                    final workMinutesByProject = <int, int>{};
+
+                    for (final session in sessions) {
+                      workMinutesByProject.update(
+                        session.projectId,
+                        (minutes) => minutes + session.workMinutes,
+                        ifAbsent: () => session.workMinutes,
+                      );
+                    }
+
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 110),
+                      itemCount: projects.length,
+                      separatorBuilder: (_, _) => Divider(
+                        height: 1,
+                        color: AppTheme.ink.withValues(alpha: 0.22),
                       ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: ProjectStatusChip(
-                            status: ProjectStatus.fromLabel(project.status),
+                      itemBuilder: (context, index) {
+                        final project = projects[index];
+                        final totalMinutes =
+                            workMinutesByProject[project.id] ?? 0;
+
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Image.asset(AppAssets.bamboo, width: 54),
+                          title: Text(
+                            '${project.title} (${_formatWorkedTime(totalMinutes)})',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 17,
+                            ),
                           ),
-                        ),
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () =>
-                          showProjectFormSheet(context, project: project),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: ProjectStatusChip(
+                                status: ProjectStatus.fromLabel(project.status),
+                              ),
+                            ),
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            showProjectFormSheet(context, project: project);
+                          },
+                        );
+                      },
                     );
                   },
                 );
@@ -95,6 +118,19 @@ class ProjectsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatWorkedTime(int minutes) {
+  final hours = minutes ~/ 60;
+  final rest = minutes % 60;
+
+  if (hours == 0) {
+    return '${rest}m';
+  }
+  if (rest == 0) {
+    return '${hours}h';
+  }
+  return '${hours}h ${rest}m';
 }
 
 class _EmptyProjects extends StatelessWidget {

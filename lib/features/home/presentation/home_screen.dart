@@ -85,6 +85,7 @@ class _ProjectSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ongoingProjects = state.ongoingProjects;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppTheme.paper.withValues(alpha: 0.82),
@@ -93,7 +94,7 @@ class _ProjectSelector extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: state.projects.isEmpty
+        child: ongoingProjects.isEmpty
             ? const SizedBox(
                 height: 54,
                 child: Align(
@@ -107,7 +108,7 @@ class _ProjectSelector extends StatelessWidget {
                   isExpanded: true,
                   icon: const Icon(Icons.arrow_drop_down),
                   items: [
-                    for (final project in state.projects)
+                    for (final project in ongoingProjects)
                       DropdownMenuItem(
                         value: project.id,
                         child: Text('Current Project: ${project.title}'),
