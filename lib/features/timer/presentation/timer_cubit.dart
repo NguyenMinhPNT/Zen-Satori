@@ -4,8 +4,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/session_repository.dart';
+import '../domain/session_models.dart';
 
-enum TimerPhase {
+enum PomodoroTimerPhase {
   idle,
   workRunning,
   workPaused,
@@ -15,23 +16,24 @@ enum TimerPhase {
   sessionFinished,
 }
 
-class TimerState extends Equatable {
-  const TimerState({
-    this.phase = TimerPhase.idle,
-    this.remainingSeconds = TimerCubit.workSeconds,
+class PomodoroTimerState extends Equatable {
+  const PomodoroTimerState({
+    this.phase = PomodoroTimerPhase.idle,
+    this.remainingSeconds = PomodoroTimerCubit.workSeconds,
     this.projectId,
     this.workStartedAt,
     this.workPersisted = false,
   });
 
-  final TimerPhase phase;
+  final PomodoroTimerPhase phase;
   final int remainingSeconds;
   final int? projectId;
   final DateTime? workStartedAt;
   final bool workPersisted;
 
   bool get isRunning {
-    return phase == TimerPhase.workRunning || phase == TimerPhase.relaxRunning;
+    return phase == PomodoroTimerPhase.workRunning ||
+        phase == PomodoroTimerPhase.relaxRunning;
   }
 
   String get displayTime {
@@ -40,15 +42,15 @@ class TimerState extends Equatable {
     return '$minutes:$seconds';
   }
 
-  TimerState copyWith({
-    TimerPhase? phase,
+  PomodoroTimerState copyWith({
+    PomodoroTimerPhase? phase,
     int? remainingSeconds,
     int? projectId,
     DateTime? workStartedAt,
     bool? workPersisted,
     bool clearProject = false,
   }) {
-    return TimerState(
+    return PomodoroTimerState(
       phase: phase ?? this.phase,
       remainingSeconds: remainingSeconds ?? this.remainingSeconds,
       projectId: clearProject ? null : projectId ?? this.projectId,
@@ -63,8 +65,9 @@ class TimerState extends Equatable {
   }
 }
 
-class TimerCubit extends Cubit<TimerState> {
-  TimerCubit(this._sessionRepository) : super(const TimerState());
+class PomodoroTimerCubit extends Cubit<PomodoroTimerState> {
+  PomodoroTimerCubit(this._sessionRepository)
+    : super(const PomodoroTimerState());
 
   static const workSeconds = 25 * 60;
   static const relaxSeconds = 5 * 60;
@@ -75,8 +78,8 @@ class TimerCubit extends Cubit<TimerState> {
   void startWork(int projectId) {
     _ticker?.cancel();
     emit(
-      TimerState(
-        phase: TimerPhase.workRunning,
+      PomodoroTimerState(
+        phase: PomodoroTimerPhase.workRunning,
         remainingSeconds: workSeconds,
         projectId: projectId,
         workStartedAt: DateTime.now(),
@@ -92,19 +95,19 @@ class TimerCubit extends Cubit<TimerState> {
     _ticker?.cancel();
     emit(
       state.copyWith(
-        phase: state.phase == TimerPhase.workRunning
-            ? TimerPhase.workPaused
-            : TimerPhase.relaxPaused,
+        phase: state.phase == PomodoroTimerPhase.workRunning
+            ? PomodoroTimerPhase.workPaused
+            : PomodoroTimerPhase.relaxPaused,
       ),
     );
   }
 
   void resume() {
-    if (state.phase == TimerPhase.workPaused) {
-      emit(state.copyWith(phase: TimerPhase.workRunning));
+    if (state.phase == PomodoroTimerPhase.workPaused) {
+      emit(state.copyWith(phase: PomodoroTimerPhase.workRunning));
       _startTicker();
-    } else if (state.phase == TimerPhase.relaxPaused) {
-      emit(state.copyWith(phase: TimerPhase.relaxRunning));
+    } else if (state.phase == PomodoroTimerPhase.relaxPaused) {
+      emit(state.copyWith(phase: PomodoroTimerPhase.relaxRunning));
       _startTicker();
     }
   }
@@ -113,7 +116,7 @@ class TimerCubit extends Cubit<TimerState> {
     _ticker?.cancel();
     emit(
       state.copyWith(
-        phase: TimerPhase.relaxRunning,
+        phase: PomodoroTimerPhase.relaxRunning,
         remainingSeconds: relaxSeconds,
       ),
     );
@@ -122,7 +125,7 @@ class TimerCubit extends Cubit<TimerState> {
 
   void reset() {
     _ticker?.cancel();
-    emit(const TimerState());
+    emit(const PomodoroTimerState());
   }
 
   Future<void> elapseSeconds(int seconds) async {
@@ -150,28 +153,32 @@ class TimerCubit extends Cubit<TimerState> {
       emit(state.copyWith(remainingSeconds: next));
       return;
     }
-    if (state.phase == TimerPhase.workRunning) {
+    if (state.phase == PomodoroTimerPhase.workRunning) {
       await _completeWork();
       return;
     }
     _ticker?.cancel();
     emit(
-      state.copyWith(phase: TimerPhase.sessionFinished, remainingSeconds: 0),
+      state.copyWith(
+        phase: PomodoroTimerPhase.sessionFinished,
+        remainingSeconds: 0,
+      ),
     );
   }
 
   Future<void> _completeWork() async {
     _ticker?.cancel();
     if (!state.workPersisted && state.projectId != null) {
-      await _sessionRepository.createCompletedWorkSession(
+      await _sessionRepository.createCompletedFocusBlock(
         projectId: state.projectId!,
         startedAt: state.workStartedAt ?? DateTime.now(),
         endedAt: DateTime.now(),
+        mode: FocusSessionMode.pomodoro,
       );
     }
     emit(
       state.copyWith(
-        phase: TimerPhase.workCompleteAwaitingRelax,
+        phase: PomodoroTimerPhase.workCompleteAwaitingRelax,
         remainingSeconds: 0,
         workPersisted: true,
       ),

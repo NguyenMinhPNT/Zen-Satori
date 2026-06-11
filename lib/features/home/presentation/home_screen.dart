@@ -8,11 +8,48 @@ import '../../../core/widgets/enso_button.dart';
 import '../../../core/widgets/zen_app_scaffold.dart';
 import '../../../core/database/app_database.dart';
 import '../../projects/presentation/project_cubit.dart';
+import '../../settings/domain/focus_mode.dart';
+import '../../settings/presentation/settings_cubit.dart';
 import '../../projects/presentation/widgets/project_form_sheet.dart';
+import '../../timer/domain/session_metrics.dart';
 import '../../timer/domain/session_repository.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<void> _handleStartSession(BuildContext context) async {
+    final focusMode = context.read<SettingsCubit>().state.focusMode;
+    if (focusMode == FocusMode.none) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Choose a focus mode'),
+            content: const Text(
+              'Turn on Flowtime Mode or Pomodoro Mode in Settings before starting a session.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Later'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  context.go('/settings');
+                },
+                child: const Text('Open Settings'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+    if (context.mounted) {
+      context.go('/timer');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +84,7 @@ class HomeScreen extends StatelessWidget {
                   enabled: selectedProject != null,
                   onPressed: selectedProject == null
                       ? null
-                      : () => context.go('/timer'),
+                      : () => _handleStartSession(context),
                 ),
               ),
               const SizedBox(height: 16),
@@ -64,7 +101,7 @@ class HomeScreen extends StatelessWidget {
                 )
               else
                 Text(
-                  'Ready to Get to Work?',
+                  'Are you ready?',
                   textAlign: TextAlign.center,
                   style: kaushan(size: 27),
                 ),
@@ -140,10 +177,14 @@ class _HomeStats extends StatelessWidget {
         final now = DateTime.now();
         final todayMinutes = sessions
             .where((session) => _isSameDay(session.startedAt, now))
-            .fold<int>(0, (total, session) => total + session.workMinutes);
+            .fold<int>(0, (total, session) {
+              return total + workedMinutesForSession(session);
+            });
         final sevenDayMinutes = sessions
             .where((session) => now.difference(session.startedAt).inDays < 7)
-            .fold<int>(0, (total, session) => total + session.workMinutes);
+            .fold<int>(0, (total, session) {
+              return total + workedMinutesForSession(session);
+            });
         final average = (sevenDayMinutes / 7).round();
         return Row(
           children: [

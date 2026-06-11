@@ -98,9 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
                                 horizontal: 48,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.paper.withValues(
-                                  alpha: 0.18,
-                                ),
+                                color: AppTheme.paper.withValues(alpha: 0.18),
                                 border: Border.all(
                                   color: AppTheme.ink.withValues(alpha: 0.65),
                                   width: 1.0,

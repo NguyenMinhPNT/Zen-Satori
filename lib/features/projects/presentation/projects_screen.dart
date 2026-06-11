@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/project_status_chip.dart';
 import '../../../core/widgets/zen_app_scaffold.dart';
 import '../../../core/widgets/zen_header.dart';
+import '../../timer/domain/session_metrics.dart';
 import '../../timer/domain/session_repository.dart';
 import '../domain/project_status.dart';
 import 'project_cubit.dart';
@@ -66,8 +67,8 @@ class ProjectsScreen extends StatelessWidget {
                     for (final session in sessions) {
                       workMinutesByProject.update(
                         session.projectId,
-                        (minutes) => minutes + session.workMinutes,
-                        ifAbsent: () => session.workMinutes,
+                        (minutes) => minutes + workedMinutesForSession(session),
+                        ifAbsent: () => workedMinutesForSession(session),
                       );
                     }
 

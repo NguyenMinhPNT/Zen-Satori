@@ -6,18 +6,21 @@ import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/stats/presentation/stats_screen.dart';
-import '../../features/timer/presentation/timer_screen.dart';
+import '../../features/timer/presentation/timer_entry_screen.dart';
 
-GoRouter createRouter() {
+GoRouter createRouter({String initialLocation = '/splash'}) {
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: initialLocation,
     routes: [
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-      GoRoute(path: '/timer', builder: (context, state) => const TimerScreen()),
+      GoRoute(
+        path: '/timer',
+        builder: (context, state) => const TimerEntryScreen(),
+      ),
       GoRoute(
         path: '/projects',
         builder: (context, state) => const ProjectsScreen(),

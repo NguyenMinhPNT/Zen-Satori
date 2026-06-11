@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/zen_app_scaffold.dart';
 import '../../../core/widgets/zen_header.dart';
+import '../../timer/domain/session_metrics.dart';
 import '../../timer/domain/session_repository.dart';
 
 class StatsScreen extends StatelessWidget {
@@ -54,7 +55,9 @@ class StatsScreen extends StatelessWidget {
       final day = today.subtract(Duration(days: 6 - offset));
       return sessions
           .where((session) => _sameDay(session.startedAt, day))
-          .fold<int>(0, (total, session) => total + session.workMinutes);
+          .fold<int>(0, (total, session) {
+            return total + workedMinutesForSession(session);
+          });
     });
   }
 

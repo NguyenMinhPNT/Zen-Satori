@@ -149,11 +149,6 @@ class _InkBarPainter extends CustomPainter {
       RRect.fromRectAndRadius(rect, const Radius.circular(8)),
       paint,
     );
-    final soft = Paint()
-      ..color = AppTheme.inkSoft.withValues(alpha: 0.18)
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(18, 12), Offset(size.width - 18, 6), soft);
   }
 
   @override

@@ -34,9 +34,14 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: cubit.setVibrateEnabled,
                     ),
                     _SettingRow(
-                      label: 'Casual Mode',
-                      value: state.casualModeEnabled,
-                      onChanged: cubit.setCasualModeEnabled,
+                      label: 'Flowtime Mode',
+                      value: state.flowtimeModeEnabled,
+                      onChanged: cubit.toggleFlowtimeMode,
+                    ),
+                    _SettingRow(
+                      label: 'Pomodoro Mode',
+                      value: state.pomodoroModeEnabled,
+                      onChanged: cubit.togglePomodoroMode,
                     ),
                     _SettingRow(
                       label: 'Schedule Reminders',

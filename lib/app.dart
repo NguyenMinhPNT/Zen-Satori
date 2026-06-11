@@ -8,6 +8,7 @@ import 'features/projects/domain/project_repository.dart';
 import 'features/projects/presentation/project_cubit.dart';
 import 'features/settings/domain/app_preferences.dart';
 import 'features/settings/presentation/settings_cubit.dart';
+import 'features/timer/presentation/flowtime_cubit.dart';
 import 'features/timer/domain/session_repository.dart';
 import 'features/timer/presentation/timer_cubit.dart';
 
@@ -16,10 +17,12 @@ class ZenSatoriApp extends StatelessWidget {
     super.key,
     required this.database,
     required this.preferences,
+    this.initialLocation = '/splash',
   });
 
   final AppDatabase database;
   final AppPreferences preferences;
+  final String initialLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +40,14 @@ class ZenSatoriApp extends StatelessWidget {
         providers: [
           BlocProvider(create: (_) => ProjectCubit(projectRepository)),
           BlocProvider(create: (_) => SettingsCubit(preferences)),
-          BlocProvider(create: (_) => TimerCubit(sessionRepository)),
+          BlocProvider(create: (_) => PomodoroTimerCubit(sessionRepository)),
+          BlocProvider(create: (_) => FlowtimeCubit(sessionRepository)),
         ],
         child: MaterialApp.router(
           title: 'Zen Satori',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light(),
-          routerConfig: createRouter(),
+          routerConfig: createRouter(initialLocation: initialLocation),
         ),
       ),
     );

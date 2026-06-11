@@ -2,30 +2,34 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/app_preferences.dart';
+import '../domain/focus_mode.dart';
 
 class SettingsState extends Equatable {
   const SettingsState({
     required this.soundEnabled,
     required this.vibrateEnabled,
-    required this.casualModeEnabled,
+    required this.focusMode,
     required this.scheduleRemindersEnabled,
   });
 
   final bool soundEnabled;
   final bool vibrateEnabled;
-  final bool casualModeEnabled;
+  final FocusMode focusMode;
   final bool scheduleRemindersEnabled;
+
+  bool get pomodoroModeEnabled => focusMode == FocusMode.pomodoro;
+  bool get flowtimeModeEnabled => focusMode == FocusMode.flowtime;
 
   SettingsState copyWith({
     bool? soundEnabled,
     bool? vibrateEnabled,
-    bool? casualModeEnabled,
+    FocusMode? focusMode,
     bool? scheduleRemindersEnabled,
   }) {
     return SettingsState(
       soundEnabled: soundEnabled ?? this.soundEnabled,
       vibrateEnabled: vibrateEnabled ?? this.vibrateEnabled,
-      casualModeEnabled: casualModeEnabled ?? this.casualModeEnabled,
+      focusMode: focusMode ?? this.focusMode,
       scheduleRemindersEnabled:
           scheduleRemindersEnabled ?? this.scheduleRemindersEnabled,
     );
@@ -35,7 +39,7 @@ class SettingsState extends Equatable {
   List<Object> get props => [
     soundEnabled,
     vibrateEnabled,
-    casualModeEnabled,
+    focusMode,
     scheduleRemindersEnabled,
   ];
 }
@@ -46,7 +50,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         SettingsState(
           soundEnabled: _preferences.soundEnabled,
           vibrateEnabled: _preferences.vibrateEnabled,
-          casualModeEnabled: _preferences.casualModeEnabled,
+          focusMode: _preferences.focusMode,
           scheduleRemindersEnabled: _preferences.scheduleRemindersEnabled,
         ),
       );
@@ -63,9 +67,17 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(vibrateEnabled: value));
   }
 
-  Future<void> setCasualModeEnabled(bool value) async {
-    await _preferences.setCasualModeEnabled(value);
-    emit(state.copyWith(casualModeEnabled: value));
+  Future<void> setFocusMode(FocusMode value) async {
+    await _preferences.setFocusMode(value);
+    emit(state.copyWith(focusMode: value));
+  }
+
+  Future<void> toggleFlowtimeMode(bool value) {
+    return setFocusMode(value ? FocusMode.flowtime : FocusMode.none);
+  }
+
+  Future<void> togglePomodoroMode(bool value) {
+    return setFocusMode(value ? FocusMode.pomodoro : FocusMode.none);
   }
 
   Future<void> setScheduleRemindersEnabled(bool value) async {

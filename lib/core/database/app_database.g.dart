@@ -627,6 +627,16 @@ class $FocusSessionsTable extends FocusSessions
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _modeMeta = const VerificationMeta('mode');
+  @override
+  late final GeneratedColumn<String> mode = GeneratedColumn<String>(
+    'mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pomodoro'),
+  );
   static const VerificationMeta _completedMeta = const VerificationMeta(
     'completed',
   );
@@ -649,6 +659,7 @@ class $FocusSessionsTable extends FocusSessions
     endedAt,
     workMinutes,
     relaxMinutes,
+    mode,
     completed,
   ];
   @override
@@ -712,6 +723,12 @@ class $FocusSessionsTable extends FocusSessions
     } else if (isInserting) {
       context.missing(_relaxMinutesMeta);
     }
+    if (data.containsKey('mode')) {
+      context.handle(
+        _modeMeta,
+        mode.isAcceptableOrUnknown(data['mode']!, _modeMeta),
+      );
+    }
     if (data.containsKey('completed')) {
       context.handle(
         _completedMeta,
@@ -753,6 +770,10 @@ class $FocusSessionsTable extends FocusSessions
         DriftSqlType.int,
         data['${effectivePrefix}relax_minutes'],
       )!,
+      mode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mode'],
+      )!,
       completed: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}completed'],
@@ -773,6 +794,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
   final DateTime endedAt;
   final int workMinutes;
   final int relaxMinutes;
+  final String mode;
   final bool completed;
   const FocusSession({
     required this.id,
@@ -781,6 +803,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
     required this.endedAt,
     required this.workMinutes,
     required this.relaxMinutes,
+    required this.mode,
     required this.completed,
   });
   @override
@@ -792,6 +815,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
     map['ended_at'] = Variable<DateTime>(endedAt);
     map['work_minutes'] = Variable<int>(workMinutes);
     map['relax_minutes'] = Variable<int>(relaxMinutes);
+    map['mode'] = Variable<String>(mode);
     map['completed'] = Variable<bool>(completed);
     return map;
   }
@@ -804,6 +828,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
       endedAt: Value(endedAt),
       workMinutes: Value(workMinutes),
       relaxMinutes: Value(relaxMinutes),
+      mode: Value(mode),
       completed: Value(completed),
     );
   }
@@ -820,6 +845,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
       endedAt: serializer.fromJson<DateTime>(json['endedAt']),
       workMinutes: serializer.fromJson<int>(json['workMinutes']),
       relaxMinutes: serializer.fromJson<int>(json['relaxMinutes']),
+      mode: serializer.fromJson<String>(json['mode']),
       completed: serializer.fromJson<bool>(json['completed']),
     );
   }
@@ -833,6 +859,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
       'endedAt': serializer.toJson<DateTime>(endedAt),
       'workMinutes': serializer.toJson<int>(workMinutes),
       'relaxMinutes': serializer.toJson<int>(relaxMinutes),
+      'mode': serializer.toJson<String>(mode),
       'completed': serializer.toJson<bool>(completed),
     };
   }
@@ -844,6 +871,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
     DateTime? endedAt,
     int? workMinutes,
     int? relaxMinutes,
+    String? mode,
     bool? completed,
   }) => FocusSession(
     id: id ?? this.id,
@@ -852,6 +880,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
     endedAt: endedAt ?? this.endedAt,
     workMinutes: workMinutes ?? this.workMinutes,
     relaxMinutes: relaxMinutes ?? this.relaxMinutes,
+    mode: mode ?? this.mode,
     completed: completed ?? this.completed,
   );
   FocusSession copyWithCompanion(FocusSessionsCompanion data) {
@@ -866,6 +895,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
       relaxMinutes: data.relaxMinutes.present
           ? data.relaxMinutes.value
           : this.relaxMinutes,
+      mode: data.mode.present ? data.mode.value : this.mode,
       completed: data.completed.present ? data.completed.value : this.completed,
     );
   }
@@ -879,6 +909,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
           ..write('endedAt: $endedAt, ')
           ..write('workMinutes: $workMinutes, ')
           ..write('relaxMinutes: $relaxMinutes, ')
+          ..write('mode: $mode, ')
           ..write('completed: $completed')
           ..write(')'))
         .toString();
@@ -892,6 +923,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
     endedAt,
     workMinutes,
     relaxMinutes,
+    mode,
     completed,
   );
   @override
@@ -904,6 +936,7 @@ class FocusSession extends DataClass implements Insertable<FocusSession> {
           other.endedAt == this.endedAt &&
           other.workMinutes == this.workMinutes &&
           other.relaxMinutes == this.relaxMinutes &&
+          other.mode == this.mode &&
           other.completed == this.completed);
 }
 
@@ -914,6 +947,7 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
   final Value<DateTime> endedAt;
   final Value<int> workMinutes;
   final Value<int> relaxMinutes;
+  final Value<String> mode;
   final Value<bool> completed;
   const FocusSessionsCompanion({
     this.id = const Value.absent(),
@@ -922,6 +956,7 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
     this.endedAt = const Value.absent(),
     this.workMinutes = const Value.absent(),
     this.relaxMinutes = const Value.absent(),
+    this.mode = const Value.absent(),
     this.completed = const Value.absent(),
   });
   FocusSessionsCompanion.insert({
@@ -931,6 +966,7 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
     required DateTime endedAt,
     required int workMinutes,
     required int relaxMinutes,
+    this.mode = const Value.absent(),
     required bool completed,
   }) : projectId = Value(projectId),
        startedAt = Value(startedAt),
@@ -945,6 +981,7 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
     Expression<DateTime>? endedAt,
     Expression<int>? workMinutes,
     Expression<int>? relaxMinutes,
+    Expression<String>? mode,
     Expression<bool>? completed,
   }) {
     return RawValuesInsertable({
@@ -954,6 +991,7 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
       if (endedAt != null) 'ended_at': endedAt,
       if (workMinutes != null) 'work_minutes': workMinutes,
       if (relaxMinutes != null) 'relax_minutes': relaxMinutes,
+      if (mode != null) 'mode': mode,
       if (completed != null) 'completed': completed,
     });
   }
@@ -965,6 +1003,7 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
     Value<DateTime>? endedAt,
     Value<int>? workMinutes,
     Value<int>? relaxMinutes,
+    Value<String>? mode,
     Value<bool>? completed,
   }) {
     return FocusSessionsCompanion(
@@ -974,6 +1013,7 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
       endedAt: endedAt ?? this.endedAt,
       workMinutes: workMinutes ?? this.workMinutes,
       relaxMinutes: relaxMinutes ?? this.relaxMinutes,
+      mode: mode ?? this.mode,
       completed: completed ?? this.completed,
     );
   }
@@ -999,6 +1039,9 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
     if (relaxMinutes.present) {
       map['relax_minutes'] = Variable<int>(relaxMinutes.value);
     }
+    if (mode.present) {
+      map['mode'] = Variable<String>(mode.value);
+    }
     if (completed.present) {
       map['completed'] = Variable<bool>(completed.value);
     }
@@ -1014,7 +1057,458 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
           ..write('endedAt: $endedAt, ')
           ..write('workMinutes: $workMinutes, ')
           ..write('relaxMinutes: $relaxMinutes, ')
+          ..write('mode: $mode, ')
           ..write('completed: $completed')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SessionInterruptionsTable extends SessionInterruptions
+    with TableInfo<$SessionInterruptionsTable, SessionInterruption> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SessionInterruptionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _focusSessionIdMeta = const VerificationMeta(
+    'focusSessionId',
+  );
+  @override
+  late final GeneratedColumn<int> focusSessionId = GeneratedColumn<int>(
+    'focus_session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES focus_sessions (id)',
+    ),
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    focusSessionId,
+    type,
+    label,
+    note,
+    startedAt,
+    endedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'session_interruptions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SessionInterruption> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('focus_session_id')) {
+      context.handle(
+        _focusSessionIdMeta,
+        focusSessionId.isAcceptableOrUnknown(
+          data['focus_session_id']!,
+          _focusSessionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_focusSessionIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SessionInterruption map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SessionInterruption(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      focusSessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focus_session_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SessionInterruptionsTable createAlias(String alias) {
+    return $SessionInterruptionsTable(attachedDatabase, alias);
+  }
+}
+
+class SessionInterruption extends DataClass
+    implements Insertable<SessionInterruption> {
+  final int id;
+  final int focusSessionId;
+  final String type;
+  final String label;
+  final String? note;
+  final DateTime startedAt;
+  final DateTime endedAt;
+  const SessionInterruption({
+    required this.id,
+    required this.focusSessionId,
+    required this.type,
+    required this.label,
+    this.note,
+    required this.startedAt,
+    required this.endedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['focus_session_id'] = Variable<int>(focusSessionId);
+    map['type'] = Variable<String>(type);
+    map['label'] = Variable<String>(label);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['started_at'] = Variable<DateTime>(startedAt);
+    map['ended_at'] = Variable<DateTime>(endedAt);
+    return map;
+  }
+
+  SessionInterruptionsCompanion toCompanion(bool nullToAbsent) {
+    return SessionInterruptionsCompanion(
+      id: Value(id),
+      focusSessionId: Value(focusSessionId),
+      type: Value(type),
+      label: Value(label),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      startedAt: Value(startedAt),
+      endedAt: Value(endedAt),
+    );
+  }
+
+  factory SessionInterruption.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SessionInterruption(
+      id: serializer.fromJson<int>(json['id']),
+      focusSessionId: serializer.fromJson<int>(json['focusSessionId']),
+      type: serializer.fromJson<String>(json['type']),
+      label: serializer.fromJson<String>(json['label']),
+      note: serializer.fromJson<String?>(json['note']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime>(json['endedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'focusSessionId': serializer.toJson<int>(focusSessionId),
+      'type': serializer.toJson<String>(type),
+      'label': serializer.toJson<String>(label),
+      'note': serializer.toJson<String?>(note),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime>(endedAt),
+    };
+  }
+
+  SessionInterruption copyWith({
+    int? id,
+    int? focusSessionId,
+    String? type,
+    String? label,
+    Value<String?> note = const Value.absent(),
+    DateTime? startedAt,
+    DateTime? endedAt,
+  }) => SessionInterruption(
+    id: id ?? this.id,
+    focusSessionId: focusSessionId ?? this.focusSessionId,
+    type: type ?? this.type,
+    label: label ?? this.label,
+    note: note.present ? note.value : this.note,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt ?? this.endedAt,
+  );
+  SessionInterruption copyWithCompanion(SessionInterruptionsCompanion data) {
+    return SessionInterruption(
+      id: data.id.present ? data.id.value : this.id,
+      focusSessionId: data.focusSessionId.present
+          ? data.focusSessionId.value
+          : this.focusSessionId,
+      type: data.type.present ? data.type.value : this.type,
+      label: data.label.present ? data.label.value : this.label,
+      note: data.note.present ? data.note.value : this.note,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SessionInterruption(')
+          ..write('id: $id, ')
+          ..write('focusSessionId: $focusSessionId, ')
+          ..write('type: $type, ')
+          ..write('label: $label, ')
+          ..write('note: $note, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, focusSessionId, type, label, note, startedAt, endedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SessionInterruption &&
+          other.id == this.id &&
+          other.focusSessionId == this.focusSessionId &&
+          other.type == this.type &&
+          other.label == this.label &&
+          other.note == this.note &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt);
+}
+
+class SessionInterruptionsCompanion
+    extends UpdateCompanion<SessionInterruption> {
+  final Value<int> id;
+  final Value<int> focusSessionId;
+  final Value<String> type;
+  final Value<String> label;
+  final Value<String?> note;
+  final Value<DateTime> startedAt;
+  final Value<DateTime> endedAt;
+  const SessionInterruptionsCompanion({
+    this.id = const Value.absent(),
+    this.focusSessionId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.label = const Value.absent(),
+    this.note = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+  });
+  SessionInterruptionsCompanion.insert({
+    this.id = const Value.absent(),
+    required int focusSessionId,
+    required String type,
+    required String label,
+    this.note = const Value.absent(),
+    required DateTime startedAt,
+    required DateTime endedAt,
+  }) : focusSessionId = Value(focusSessionId),
+       type = Value(type),
+       label = Value(label),
+       startedAt = Value(startedAt),
+       endedAt = Value(endedAt);
+  static Insertable<SessionInterruption> custom({
+    Expression<int>? id,
+    Expression<int>? focusSessionId,
+    Expression<String>? type,
+    Expression<String>? label,
+    Expression<String>? note,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (focusSessionId != null) 'focus_session_id': focusSessionId,
+      if (type != null) 'type': type,
+      if (label != null) 'label': label,
+      if (note != null) 'note': note,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+    });
+  }
+
+  SessionInterruptionsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? focusSessionId,
+    Value<String>? type,
+    Value<String>? label,
+    Value<String?>? note,
+    Value<DateTime>? startedAt,
+    Value<DateTime>? endedAt,
+  }) {
+    return SessionInterruptionsCompanion(
+      id: id ?? this.id,
+      focusSessionId: focusSessionId ?? this.focusSessionId,
+      type: type ?? this.type,
+      label: label ?? this.label,
+      note: note ?? this.note,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (focusSessionId.present) {
+      map['focus_session_id'] = Variable<int>(focusSessionId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SessionInterruptionsCompanion(')
+          ..write('id: $id, ')
+          ..write('focusSessionId: $focusSessionId, ')
+          ..write('type: $type, ')
+          ..write('label: $label, ')
+          ..write('note: $note, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt')
           ..write(')'))
         .toString();
   }
@@ -1369,6 +1863,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ProjectsTable projects = $ProjectsTable(this);
   late final $FocusSessionsTable focusSessions = $FocusSessionsTable(this);
+  late final $SessionInterruptionsTable sessionInterruptions =
+      $SessionInterruptionsTable(this);
   late final $AchievementsTable achievements = $AchievementsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -1377,6 +1873,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     projects,
     focusSessions,
+    sessionInterruptions,
     achievements,
   ];
 }
@@ -1763,6 +2260,7 @@ typedef $$FocusSessionsTableCreateCompanionBuilder =
       required DateTime endedAt,
       required int workMinutes,
       required int relaxMinutes,
+      Value<String> mode,
       required bool completed,
     });
 typedef $$FocusSessionsTableUpdateCompanionBuilder =
@@ -1773,6 +2271,7 @@ typedef $$FocusSessionsTableUpdateCompanionBuilder =
       Value<DateTime> endedAt,
       Value<int> workMinutes,
       Value<int> relaxMinutes,
+      Value<String> mode,
       Value<bool> completed,
     });
 
@@ -1800,6 +2299,34 @@ final class $$FocusSessionsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $SessionInterruptionsTable,
+    List<SessionInterruption>
+  >
+  _sessionInterruptionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.sessionInterruptions,
+        aliasName: $_aliasNameGenerator(
+          db.focusSessions.id,
+          db.sessionInterruptions.focusSessionId,
+        ),
+      );
+
+  $$SessionInterruptionsTableProcessedTableManager
+  get sessionInterruptionsRefs {
+    final manager = $$SessionInterruptionsTableTableManager(
+      $_db,
+      $_db.sessionInterruptions,
+    ).filter((f) => f.focusSessionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _sessionInterruptionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -1838,6 +2365,11 @@ class $$FocusSessionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<bool> get completed => $composableBuilder(
     column: $table.completed,
     builder: (column) => ColumnFilters(column),
@@ -1864,6 +2396,31 @@ class $$FocusSessionsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> sessionInterruptionsRefs(
+    Expression<bool> Function($$SessionInterruptionsTableFilterComposer f) f,
+  ) {
+    final $$SessionInterruptionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sessionInterruptions,
+      getReferencedColumn: (t) => t.focusSessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessionInterruptionsTableFilterComposer(
+            $db: $db,
+            $table: $db.sessionInterruptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -1898,6 +2455,11 @@ class $$FocusSessionsTableOrderingComposer
 
   ColumnOrderings<int> get relaxMinutes => $composableBuilder(
     column: $table.relaxMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mode => $composableBuilder(
+    column: $table.mode,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1958,6 +2520,9 @@ class $$FocusSessionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get mode =>
+      $composableBuilder(column: $table.mode, builder: (column) => column);
+
   GeneratedColumn<bool> get completed =>
       $composableBuilder(column: $table.completed, builder: (column) => column);
 
@@ -1983,6 +2548,32 @@ class $$FocusSessionsTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> sessionInterruptionsRefs<T extends Object>(
+    Expression<T> Function($$SessionInterruptionsTableAnnotationComposer a) f,
+  ) {
+    final $$SessionInterruptionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.sessionInterruptions,
+          getReferencedColumn: (t) => t.focusSessionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SessionInterruptionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.sessionInterruptions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$FocusSessionsTableTableManager
@@ -1998,7 +2589,10 @@ class $$FocusSessionsTableTableManager
           $$FocusSessionsTableUpdateCompanionBuilder,
           (FocusSession, $$FocusSessionsTableReferences),
           FocusSession,
-          PrefetchHooks Function({bool projectId})
+          PrefetchHooks Function({
+            bool projectId,
+            bool sessionInterruptionsRefs,
+          })
         > {
   $$FocusSessionsTableTableManager(_$AppDatabase db, $FocusSessionsTable table)
     : super(
@@ -2019,6 +2613,7 @@ class $$FocusSessionsTableTableManager
                 Value<DateTime> endedAt = const Value.absent(),
                 Value<int> workMinutes = const Value.absent(),
                 Value<int> relaxMinutes = const Value.absent(),
+                Value<String> mode = const Value.absent(),
                 Value<bool> completed = const Value.absent(),
               }) => FocusSessionsCompanion(
                 id: id,
@@ -2027,6 +2622,7 @@ class $$FocusSessionsTableTableManager
                 endedAt: endedAt,
                 workMinutes: workMinutes,
                 relaxMinutes: relaxMinutes,
+                mode: mode,
                 completed: completed,
               ),
           createCompanionCallback:
@@ -2037,6 +2633,7 @@ class $$FocusSessionsTableTableManager
                 required DateTime endedAt,
                 required int workMinutes,
                 required int relaxMinutes,
+                Value<String> mode = const Value.absent(),
                 required bool completed,
               }) => FocusSessionsCompanion.insert(
                 id: id,
@@ -2045,6 +2642,7 @@ class $$FocusSessionsTableTableManager
                 endedAt: endedAt,
                 workMinutes: workMinutes,
                 relaxMinutes: relaxMinutes,
+                mode: mode,
                 completed: completed,
               ),
           withReferenceMapper: (p0) => p0
@@ -2055,7 +2653,405 @@ class $$FocusSessionsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({projectId = false}) {
+          prefetchHooksCallback:
+              ({projectId = false, sessionInterruptionsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (sessionInterruptionsRefs) db.sessionInterruptions,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.projectId,
+                                    referencedTable:
+                                        $$FocusSessionsTableReferences
+                                            ._projectIdTable(db),
+                                    referencedColumn:
+                                        $$FocusSessionsTableReferences
+                                            ._projectIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (sessionInterruptionsRefs)
+                        await $_getPrefetchedData<
+                          FocusSession,
+                          $FocusSessionsTable,
+                          SessionInterruption
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FocusSessionsTableReferences
+                              ._sessionInterruptionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FocusSessionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).sessionInterruptionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.focusSessionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$FocusSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FocusSessionsTable,
+      FocusSession,
+      $$FocusSessionsTableFilterComposer,
+      $$FocusSessionsTableOrderingComposer,
+      $$FocusSessionsTableAnnotationComposer,
+      $$FocusSessionsTableCreateCompanionBuilder,
+      $$FocusSessionsTableUpdateCompanionBuilder,
+      (FocusSession, $$FocusSessionsTableReferences),
+      FocusSession,
+      PrefetchHooks Function({bool projectId, bool sessionInterruptionsRefs})
+    >;
+typedef $$SessionInterruptionsTableCreateCompanionBuilder =
+    SessionInterruptionsCompanion Function({
+      Value<int> id,
+      required int focusSessionId,
+      required String type,
+      required String label,
+      Value<String?> note,
+      required DateTime startedAt,
+      required DateTime endedAt,
+    });
+typedef $$SessionInterruptionsTableUpdateCompanionBuilder =
+    SessionInterruptionsCompanion Function({
+      Value<int> id,
+      Value<int> focusSessionId,
+      Value<String> type,
+      Value<String> label,
+      Value<String?> note,
+      Value<DateTime> startedAt,
+      Value<DateTime> endedAt,
+    });
+
+final class $$SessionInterruptionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $SessionInterruptionsTable,
+          SessionInterruption
+        > {
+  $$SessionInterruptionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FocusSessionsTable _focusSessionIdTable(_$AppDatabase db) =>
+      db.focusSessions.createAlias(
+        $_aliasNameGenerator(
+          db.sessionInterruptions.focusSessionId,
+          db.focusSessions.id,
+        ),
+      );
+
+  $$FocusSessionsTableProcessedTableManager get focusSessionId {
+    final $_column = $_itemColumn<int>('focus_session_id')!;
+
+    final manager = $$FocusSessionsTableTableManager(
+      $_db,
+      $_db.focusSessions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_focusSessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SessionInterruptionsTableFilterComposer
+    extends Composer<_$AppDatabase, $SessionInterruptionsTable> {
+  $$SessionInterruptionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FocusSessionsTableFilterComposer get focusSessionId {
+    final $$FocusSessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.focusSessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SessionInterruptionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SessionInterruptionsTable> {
+  $$SessionInterruptionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FocusSessionsTableOrderingComposer get focusSessionId {
+    final $$FocusSessionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.focusSessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SessionInterruptionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SessionInterruptionsTable> {
+  $$SessionInterruptionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  $$FocusSessionsTableAnnotationComposer get focusSessionId {
+    final $$FocusSessionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.focusSessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SessionInterruptionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SessionInterruptionsTable,
+          SessionInterruption,
+          $$SessionInterruptionsTableFilterComposer,
+          $$SessionInterruptionsTableOrderingComposer,
+          $$SessionInterruptionsTableAnnotationComposer,
+          $$SessionInterruptionsTableCreateCompanionBuilder,
+          $$SessionInterruptionsTableUpdateCompanionBuilder,
+          (SessionInterruption, $$SessionInterruptionsTableReferences),
+          SessionInterruption,
+          PrefetchHooks Function({bool focusSessionId})
+        > {
+  $$SessionInterruptionsTableTableManager(
+    _$AppDatabase db,
+    $SessionInterruptionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SessionInterruptionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SessionInterruptionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$SessionInterruptionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> focusSessionId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime> endedAt = const Value.absent(),
+              }) => SessionInterruptionsCompanion(
+                id: id,
+                focusSessionId: focusSessionId,
+                type: type,
+                label: label,
+                note: note,
+                startedAt: startedAt,
+                endedAt: endedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int focusSessionId,
+                required String type,
+                required String label,
+                Value<String?> note = const Value.absent(),
+                required DateTime startedAt,
+                required DateTime endedAt,
+              }) => SessionInterruptionsCompanion.insert(
+                id: id,
+                focusSessionId: focusSessionId,
+                type: type,
+                label: label,
+                note: note,
+                startedAt: startedAt,
+                endedAt: endedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SessionInterruptionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({focusSessionId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -2075,16 +3071,18 @@ class $$FocusSessionsTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (projectId) {
+                    if (focusSessionId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.projectId,
-                                referencedTable: $$FocusSessionsTableReferences
-                                    ._projectIdTable(db),
-                                referencedColumn: $$FocusSessionsTableReferences
-                                    ._projectIdTable(db)
-                                    .id,
+                                currentColumn: table.focusSessionId,
+                                referencedTable:
+                                    $$SessionInterruptionsTableReferences
+                                        ._focusSessionIdTable(db),
+                                referencedColumn:
+                                    $$SessionInterruptionsTableReferences
+                                        ._focusSessionIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -2100,19 +3098,19 @@ class $$FocusSessionsTableTableManager
       );
 }
 
-typedef $$FocusSessionsTableProcessedTableManager =
+typedef $$SessionInterruptionsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $FocusSessionsTable,
-      FocusSession,
-      $$FocusSessionsTableFilterComposer,
-      $$FocusSessionsTableOrderingComposer,
-      $$FocusSessionsTableAnnotationComposer,
-      $$FocusSessionsTableCreateCompanionBuilder,
-      $$FocusSessionsTableUpdateCompanionBuilder,
-      (FocusSession, $$FocusSessionsTableReferences),
-      FocusSession,
-      PrefetchHooks Function({bool projectId})
+      $SessionInterruptionsTable,
+      SessionInterruption,
+      $$SessionInterruptionsTableFilterComposer,
+      $$SessionInterruptionsTableOrderingComposer,
+      $$SessionInterruptionsTableAnnotationComposer,
+      $$SessionInterruptionsTableCreateCompanionBuilder,
+      $$SessionInterruptionsTableUpdateCompanionBuilder,
+      (SessionInterruption, $$SessionInterruptionsTableReferences),
+      SessionInterruption,
+      PrefetchHooks Function({bool focusSessionId})
     >;
 typedef $$AchievementsTableCreateCompanionBuilder =
     AchievementsCompanion Function({
@@ -2318,6 +3316,8 @@ class $AppDatabaseManager {
       $$ProjectsTableTableManager(_db, _db.projects);
   $$FocusSessionsTableTableManager get focusSessions =>
       $$FocusSessionsTableTableManager(_db, _db.focusSessions);
+  $$SessionInterruptionsTableTableManager get sessionInterruptions =>
+      $$SessionInterruptionsTableTableManager(_db, _db.sessionInterruptions);
   $$AchievementsTableTableManager get achievements =>
       $$AchievementsTableTableManager(_db, _db.achievements);
 }

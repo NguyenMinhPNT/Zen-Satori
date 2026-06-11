@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'focus_mode.dart';
+
 class AppPreferences {
   AppPreferences(this._prefs);
 
@@ -8,13 +10,16 @@ class AppPreferences {
   static const hasBegunKey = 'hasBegun';
   static const soundEnabledKey = 'soundEnabled';
   static const vibrateEnabledKey = 'vibrateEnabled';
-  static const casualModeEnabledKey = 'casualModeEnabled';
+  static const focusModeKey = 'focusMode';
   static const scheduleRemindersEnabledKey = 'scheduleRemindersEnabled';
 
   bool get hasBegun => _prefs.getBool(hasBegunKey) ?? false;
   bool get soundEnabled => _prefs.getBool(soundEnabledKey) ?? true;
   bool get vibrateEnabled => _prefs.getBool(vibrateEnabledKey) ?? true;
-  bool get casualModeEnabled => _prefs.getBool(casualModeEnabledKey) ?? false;
+  FocusMode get focusMode {
+    return FocusMode.fromStorage(_prefs.getString(focusModeKey));
+  }
+
   bool get scheduleRemindersEnabled {
     return _prefs.getBool(scheduleRemindersEnabledKey) ?? false;
   }
@@ -28,8 +33,8 @@ class AppPreferences {
     return _prefs.setBool(vibrateEnabledKey, value);
   }
 
-  Future<void> setCasualModeEnabled(bool value) {
-    return _prefs.setBool(casualModeEnabledKey, value);
+  Future<void> setFocusMode(FocusMode value) {
+    return _prefs.setString(focusModeKey, value.storageValue);
   }
 
   Future<void> setScheduleRemindersEnabled(bool value) {

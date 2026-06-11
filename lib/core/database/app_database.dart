@@ -26,7 +26,18 @@ class FocusSessions extends Table {
   DateTimeColumn get endedAt => dateTime()();
   IntColumn get workMinutes => integer()();
   IntColumn get relaxMinutes => integer()();
+  TextColumn get mode => text().withDefault(const Constant('pomodoro'))();
   BoolColumn get completed => boolean()();
+}
+
+class SessionInterruptions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get focusSessionId => integer().references(FocusSessions, #id)();
+  TextColumn get type => text()();
+  TextColumn get label => text()();
+  TextColumn get note => text().nullable()();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get endedAt => dateTime()();
 }
 
 class Achievements extends Table {
@@ -37,12 +48,14 @@ class Achievements extends Table {
   IntColumn get progress => integer().withDefault(const Constant(0))();
 }
 
-@DriftDatabase(tables: [Projects, FocusSessions, Achievements])
+@DriftDatabase(
+  tables: [Projects, FocusSessions, SessionInterruptions, Achievements],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -68,6 +81,20 @@ class AppDatabase extends _$AppDatabase {
           if (!columnNames.contains('status')) {
             await m.addColumn(projects, projects.status);
           }
+        }
+        if (from < 4) {
+          final focusSessionColumns = await customSelect(
+            'PRAGMA table_info(focus_sessions)',
+          ).get();
+          final focusSessionColumnNames = focusSessionColumns
+              .map((row) => row.data['name'] as String?)
+              .whereType<String>()
+              .toSet();
+
+          if (!focusSessionColumnNames.contains('mode')) {
+            await m.addColumn(focusSessions, focusSessions.mode);
+          }
+          await m.createTable(sessionInterruptions);
         }
       },
     );
