@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../home/presentation/home_tab.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/zen_header.dart';
 import '../../projects/presentation/project_cubit.dart';
 import 'timer_cubit.dart';
 
 class PomodoroTimerScreen extends StatefulWidget {
-  const PomodoroTimerScreen({super.key});
+  const PomodoroTimerScreen({super.key, required this.originTab});
+
+  final HomeTab originTab;
 
   @override
   State<PomodoroTimerScreen> createState() => _PomodoroTimerScreenState();
@@ -60,7 +63,8 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
                             ),
                             const SizedBox(height: 12),
                             FilledButton(
-                              onPressed: () => context.go('/projects'),
+                              onPressed: () =>
+                                  context.go(HomeTab.projects.location),
                               child: const Text('Create Project'),
                             ),
                           ],
@@ -100,7 +104,10 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
                           ),
                           Align(
                             alignment: Alignment.bottomCenter,
-                            child: _PomodoroTimerActions(state: state),
+                            child: _PomodoroTimerActions(
+                              state: state,
+                              originTab: widget.originTab,
+                            ),
                           ),
                         ],
                       ),
@@ -116,9 +123,10 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
 }
 
 class _PomodoroTimerActions extends StatelessWidget {
-  const _PomodoroTimerActions({required this.state});
+  const _PomodoroTimerActions({required this.state, required this.originTab});
 
   final PomodoroTimerState state;
+  final HomeTab originTab;
 
   Future<void> _confirmEndSession(BuildContext context) async {
     final shouldGiveUp = await showDialog<bool>(
@@ -143,7 +151,7 @@ class _PomodoroTimerActions extends StatelessWidget {
 
     if (shouldGiveUp == true && context.mounted) {
       context.read<PomodoroTimerCubit>().reset();
-      context.go('/home');
+      context.go(originTab.location);
     }
   }
 
@@ -160,7 +168,7 @@ class _PomodoroTimerActions extends StatelessWidget {
       return FilledButton(
         onPressed: () {
           cubit.reset();
-          context.go('/home');
+          context.go(originTab.location);
         },
         child: const Text('Return Home'),
       );

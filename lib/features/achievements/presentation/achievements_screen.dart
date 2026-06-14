@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/assets/app_assets.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../../../core/widgets/zen_app_scaffold.dart';
 import '../../../core/widgets/zen_header.dart';
 
@@ -23,14 +24,25 @@ class AchievementsScreen extends StatelessWidget {
     ];
 
     return ZenAppScaffold(
-      currentIndex: 3,
+      drawer: const AppDrawer(currentSection: AppDrawerSection.achievements),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const ZenHeader(title: 'Achievements', showBack: false),
+          ZenHeader(
+            title: 'Achievements',
+            showBack: false,
+            leading: Builder(
+              builder: (context) {
+                return IconButton(
+                  onPressed: Scaffold.of(context).openDrawer,
+                  icon: const Icon(Icons.menu_rounded, size: 30),
+                );
+              },
+            ),
+          ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(22, 6, 22, 110),
+              padding: const EdgeInsets.fromLTRB(22, 6, 22, 28),
               children: [
                 const Text(
                   'Path to Satori',
@@ -91,7 +103,6 @@ class _Badge extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             color: unlocked ? AppTheme.ink : AppTheme.inkSoft,
-            letterSpacing: 0,
           ),
         ),
       ],

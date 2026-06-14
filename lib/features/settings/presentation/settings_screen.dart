@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/widgets/app_drawer.dart';
 import '../../../core/widgets/ink_switch.dart';
 import '../../../core/widgets/zen_app_scaffold.dart';
 import '../../../core/widgets/zen_header.dart';
@@ -12,16 +13,27 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ZenAppScaffold(
-      currentIndex: 4,
+      drawer: const AppDrawer(currentSection: AppDrawerSection.settings),
       child: Column(
         children: [
-          const ZenHeader(title: 'Settings', showBack: false),
+          ZenHeader(
+            title: 'Settings',
+            showBack: false,
+            leading: Builder(
+              builder: (context) {
+                return IconButton(
+                  onPressed: Scaffold.of(context).openDrawer,
+                  icon: const Icon(Icons.menu_rounded, size: 30),
+                );
+              },
+            ),
+          ),
           Expanded(
             child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, state) {
                 final cubit = context.read<SettingsCubit>();
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 22, 24, 110),
+                  padding: const EdgeInsets.fromLTRB(24, 22, 24, 40),
                   children: [
                     _SettingRow(
                       label: 'Sounds (Zen Bell)',
@@ -32,16 +44,6 @@ class SettingsScreen extends StatelessWidget {
                       label: 'Vibrate',
                       value: state.vibrateEnabled,
                       onChanged: cubit.setVibrateEnabled,
-                    ),
-                    _SettingRow(
-                      label: 'Flowtime Mode',
-                      value: state.flowtimeModeEnabled,
-                      onChanged: cubit.toggleFlowtimeMode,
-                    ),
-                    _SettingRow(
-                      label: 'Pomodoro Mode',
-                      value: state.pomodoroModeEnabled,
-                      onChanged: cubit.togglePomodoroMode,
                     ),
                     _SettingRow(
                       label: 'Schedule Reminders',

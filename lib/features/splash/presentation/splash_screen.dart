@@ -32,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await preferences.setHasBegun(true);
 
     if (!mounted) return;
-    context.go('/home');
+    context.go('/home?tab=flowtime');
   }
 
   @override

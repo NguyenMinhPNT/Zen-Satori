@@ -8,11 +8,13 @@ class ZenHeader extends StatelessWidget {
     super.key,
     required this.title,
     this.showBack = true,
+    this.leading,
     this.trailing,
   });
 
   final String title;
   final bool showBack;
+  final Widget? leading;
   final Widget? trailing;
 
   @override
@@ -23,18 +25,20 @@ class ZenHeader extends StatelessWidget {
         children: [
           SizedBox(
             width: 48,
-            child: showBack
-                ? IconButton(
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go('/home');
-                      }
-                    },
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 22),
-                  )
-                : null,
+            child:
+                leading ??
+                (showBack
+                    ? IconButton(
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go('/home?tab=flowtime');
+                          }
+                        },
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 22),
+                      )
+                    : null),
           ),
           Expanded(
             child: Text(

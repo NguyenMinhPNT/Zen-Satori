@@ -24,7 +24,7 @@ void main() {
 
     expect(find.text('Zen Satori'), findsOneWidget);
     expect(find.text('Deep Work Tracker'), findsOneWidget);
-    expect(find.text('Tap to Begin'), findsOneWidget);
+    expect(find.text('Tap here to Begin'), findsOneWidget);
     await _disposeHarness(tester);
   });
 
@@ -47,62 +47,98 @@ void main() {
     await _pumpFrames(tester);
 
     expect(find.text('Create a Project to Begin'), findsOneWidget);
-    expect(find.byType(Image), findsWidgets);
+    expect(find.byType(EnsoButton), findsOneWidget);
     await _disposeHarness(tester);
   });
 
-  testWidgets('Start Session warns when no mode is selected', (tester) async {
-    final harness = await _createHarness();
-    await harness.projectRepository.createProject(
-      title: 'Morning Practice',
-      targetMinutes: 120,
-    );
+  testWidgets('Drawer opens from top-level pages', (tester) async {
+    final routes = <String, String>{
+      '/home?tab=flowtime': 'Create a Project to Begin',
+      '/achievements': 'Path to Satori',
+      '/stats': 'Insights',
+      '/settings': 'Sounds (Zen Bell)',
+    };
 
+    for (final entry in routes.entries) {
+      final harness = await _createHarness(initialLocation: entry.key);
+      await tester.pumpWidget(harness.app);
+      await _pumpFrames(tester);
+
+      expect(find.text(entry.value), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.menu_rounded).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Achievements'), findsWidgets);
+      expect(find.text('Stats'), findsWidgets);
+      expect(find.text('Settings'), findsWidgets);
+
+      await _disposeHarness(tester);
+    }
+  });
+
+  testWidgets('Drawer Home resets active home tab to Flowtime', (tester) async {
+    final harness = await _createHarness(initialLocation: '/home?tab=zen');
     await tester.pumpWidget(harness.app);
     await _pumpFrames(tester);
 
-    await tester.tap(find.byType(EnsoButton));
-    await _pumpFrames(tester);
+    expect(
+      find.text('Zen practice content will arrive in a later update.'),
+      findsOneWidget,
+    );
 
-    expect(find.text('Choose a focus mode'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.menu_rounded).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Open Settings'));
-    await _pumpFrames(tester);
-
-    expect(find.text('Flowtime Mode'), findsOneWidget);
+    expect(find.byType(EnsoButton), findsOneWidget);
+    expect(
+      find.text('Zen practice content will arrive in a later update.'),
+      findsNothing,
+    );
     await _disposeHarness(tester);
   });
 
-  testWidgets('Settings focus mode toggles are mutually exclusive', (
+  testWidgets('Bottom navigation switches among home tabs', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 932));
+    final harness = await _createHarness();
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Projects'));
+    await tester.pumpAndSettle();
+    expect(find.text('Search'), findsOneWidget);
+
+    await tester.tap(find.text('Pomodoro'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pomodoro Mode'), findsOneWidget);
+
+    await tester.tap(find.text('Guru AI'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Guided AI focus support is coming soon.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Zen'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Zen practice content will arrive in a later update.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Flowtime'));
+    await tester.pumpAndSettle();
+    expect(find.byType(EnsoButton), findsOneWidget);
+    await _disposeHarness(tester);
+    await tester.binding.setSurfaceSize(null);
+  });
+
+  testWidgets('Flowtime tab start launches Flowtime timer and sets mode', (
     tester,
   ) async {
     final harness = await _createHarness();
-    await tester.pumpWidget(harness.app);
-    await _pumpFrames(tester);
-
-    await tester.tap(find.text('Settings'));
-    await _pumpFrames(tester);
-
-    await tester.tap(find.text('Flowtime Mode'));
-    await _pumpFrames(tester);
-    expect(harness.preferences.focusMode, FocusMode.flowtime);
-
-    await tester.tap(find.text('Pomodoro Mode'));
-    await _pumpFrames(tester);
-    expect(harness.preferences.focusMode, FocusMode.pomodoro);
-
-    await tester.tap(find.text('Pomodoro Mode'));
-    await _pumpFrames(tester);
-    expect(harness.preferences.focusMode, FocusMode.none);
-    await _disposeHarness(tester);
-  });
-
-  testWidgets('Pomodoro mode opens Pomodoro timer screen', (tester) async {
-    final harness = await _createHarness(
-      initialValues: {
-        AppPreferences.focusModeKey: FocusMode.pomodoro.storageValue,
-      },
-    );
     await harness.projectRepository.createProject(
       title: 'Morning Practice',
       targetMinutes: 120,
@@ -114,17 +150,37 @@ void main() {
     await tester.tap(find.byType(EnsoButton));
     await _pumpFrames(tester);
 
-    expect(find.text('Pomodoro'), findsOneWidget);
+    expect(harness.preferences.focusMode, FocusMode.flowtime);
+    expect(find.text('Session Journal'), findsOneWidget);
+    await _disposeHarness(tester);
+  });
+
+  testWidgets('Pomodoro tab start launches Pomodoro timer and sets mode', (
+    tester,
+  ) async {
+    final harness = await _createHarness();
+    await harness.projectRepository.createProject(
+      title: 'Morning Practice',
+      targetMinutes: 120,
+    );
+
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Pomodoro'));
+    await _pumpFrames(tester);
+    await tester.tap(find.byType(EnsoButton));
+    await _pumpFrames(tester);
+
+    expect(harness.preferences.focusMode, FocusMode.pomodoro);
     expect(find.text('25:00'), findsOneWidget);
     await _disposeHarness(tester);
   });
 
-  testWidgets('Flowtime mode opens Flowtime screen', (tester) async {
-    final harness = await _createHarness(
-      initialValues: {
-        AppPreferences.focusModeKey: FocusMode.flowtime.storageValue,
-      },
-    );
+  testWidgets('Ending Pomodoro returns to the originating home tab', (
+    tester,
+  ) async {
+    final harness = await _createHarness();
     await harness.projectRepository.createProject(
       title: 'Morning Practice',
       targetMinutes: 120,
@@ -133,13 +189,44 @@ void main() {
     await tester.pumpWidget(harness.app);
     await _pumpFrames(tester);
 
+    await tester.tap(find.text('Pomodoro'));
+    await _pumpFrames(tester);
     await tester.tap(find.byType(EnsoButton));
     await _pumpFrames(tester);
 
-    expect(find.text('Flowtime'), findsOneWidget);
-    expect(find.text('Session Journal'), findsOneWidget);
+    await tester.tap(find.text('End'));
+    await _pumpFrames(tester);
+    await tester.tap(find.text('Give Up'));
+    await _pumpFrames(tester);
+
+    expect(find.text('Pomodoro Mode'), findsOneWidget);
     await _disposeHarness(tester);
   });
+
+  testWidgets(
+    'Settings keeps remaining toggles and removes focus mode toggles',
+    (tester) async {
+      final harness = await _createHarness();
+      await tester.pumpWidget(harness.app);
+      await _pumpFrames(tester);
+
+      await tester.tap(find.byIcon(Icons.menu_rounded).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sounds (Zen Bell)'), findsOneWidget);
+      expect(find.text('Vibrate'), findsOneWidget);
+      expect(find.text('Schedule Reminders'), findsOneWidget);
+      expect(find.text('Flowtime Mode'), findsNothing);
+      expect(find.text('Pomodoro Mode'), findsNothing);
+
+      await tester.tap(find.text('Vibrate'));
+      await _pumpFrames(tester);
+      expect(harness.preferences.vibrateEnabled, isFalse);
+      await _disposeHarness(tester);
+    },
+  );
 
   test('Pomodoro timer waits for user action before relax starts', () async {
     final database = AppDatabase(NativeDatabase.memory());

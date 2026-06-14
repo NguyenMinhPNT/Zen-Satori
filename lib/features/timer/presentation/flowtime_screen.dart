@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../home/presentation/home_tab.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/zen_header.dart';
 import '../../projects/presentation/project_cubit.dart';
@@ -9,7 +10,9 @@ import '../domain/session_models.dart';
 import 'flowtime_cubit.dart';
 
 class FlowtimerScreen extends StatefulWidget {
-  const FlowtimerScreen({super.key});
+  const FlowtimerScreen({super.key, required this.originTab});
+
+  final HomeTab originTab;
 
   @override
   State<FlowtimerScreen> createState() => _FlowtimerScreenState();
@@ -85,7 +88,8 @@ class _FlowtimerScreenState extends State<FlowtimerScreen>
                             ),
                             const SizedBox(height: 12),
                             FilledButton(
-                              onPressed: () => context.go('/projects'),
+                              onPressed: () =>
+                                  context.go(HomeTab.projects.location),
                               child: const Text('Create Project'),
                             ),
                           ],
@@ -121,7 +125,7 @@ class _FlowtimerScreenState extends State<FlowtimerScreen>
                         ),
                       ],
                       const SizedBox(height: 18),
-                      _FlowActions(state: state),
+                      _FlowActions(state: state, originTab: widget.originTab),
                       const SizedBox(height: 22),
                       _SessionJournal(blocks: state.completedBlocks),
                     ],
@@ -382,9 +386,10 @@ class _CurrentInterruptionsCard extends StatelessWidget {
 }
 
 class _FlowActions extends StatelessWidget {
-  const _FlowActions({required this.state});
+  const _FlowActions({required this.state, required this.originTab});
 
   final FlowtimeState state;
+  final HomeTab originTab;
 
   @override
   Widget build(BuildContext context) {
@@ -500,7 +505,7 @@ class _FlowActions extends StatelessWidget {
 
     if (shouldEnd == true && context.mounted) {
       context.read<FlowtimeCubit>().finishSession();
-      context.go('/home');
+      context.go(originTab.location);
     }
   }
 }

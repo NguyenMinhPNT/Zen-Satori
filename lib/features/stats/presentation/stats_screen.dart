@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../../../core/widgets/zen_app_scaffold.dart';
 import '../../../core/widgets/zen_header.dart';
 import '../../timer/domain/session_metrics.dart';
@@ -14,11 +15,22 @@ class StatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ZenAppScaffold(
-      currentIndex: 2,
+      drawer: const AppDrawer(currentSection: AppDrawerSection.stats),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const ZenHeader(title: 'Stats', showBack: false),
+          ZenHeader(
+            title: 'Stats',
+            showBack: false,
+            leading: Builder(
+              builder: (context) {
+                return IconButton(
+                  onPressed: Scaffold.of(context).openDrawer,
+                  icon: const Icon(Icons.menu_rounded, size: 30),
+                );
+              },
+            ),
+          ),
           Expanded(
             child: StreamBuilder<List<FocusSession>>(
               stream: context.read<SessionRepository>().watchSessions(),
@@ -26,7 +38,7 @@ class StatsScreen extends StatelessWidget {
                 final sessions = snapshot.data ?? const <FocusSession>[];
                 final daily = _lastSevenDays(sessions);
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(22, 8, 22, 110),
+                  padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,10 +206,10 @@ class _HeatMapPainter extends CustomPainter {
       }
     }
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
-    for (final label in ['00:00', '05:00', '12:00', '15:00']) {
-      final index = ['00:00', '05:00', '12:00', '15:00'].indexOf(label);
+    const labels = ['00:00', '05:00', '12:00', '15:00'];
+    for (var index = 0; index < labels.length; index += 1) {
       textPainter.text = TextSpan(
-        text: label,
+        text: labels[index],
         style: const TextStyle(color: AppTheme.ink, fontSize: 10),
       );
       textPainter.layout();
