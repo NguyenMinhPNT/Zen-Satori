@@ -23,8 +23,20 @@ void main() {
     await _pumpFrames(tester);
 
     expect(find.text('Zen Satori'), findsOneWidget);
+    expect(find.text('Deep Work Tracker'), findsOneWidget);
     expect(find.text('Tap to Begin'), findsOneWidget);
     await _disposeHarness(tester);
+  });
+
+  test('AppPreferences persists hasBegun flag', () async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = AppPreferences(await SharedPreferences.getInstance());
+
+    expect(preferences.hasBegun, isFalse);
+
+    await preferences.setHasBegun(true);
+
+    expect(preferences.hasBegun, isTrue);
   });
 
   testWidgets('Home disables Start Session until a project exists', (

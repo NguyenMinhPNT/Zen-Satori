@@ -68,12 +68,11 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/background_Splash_screen.png
+    - assets/images/new background splash screen.png
     - assets/images/bamboo_clean.png
     - assets/images/enso_circle_clean.png
     - assets/images/lotus.png
     - assets/images/start_session_button.png
-    - assets/images/tap_to_begin_button.png
     - assets/images/triện.png
 
   fonts:
