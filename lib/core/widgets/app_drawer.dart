@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/home/presentation/home_tab.dart';
 import '../theme/app_theme.dart';
 
-enum AppDrawerSection { home, achievements, stats, settings }
+enum AppDrawerSection { home, achievements, stats, settings, about }
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key, required this.currentSection});
@@ -14,8 +14,9 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Drawer(
-      backgroundColor: AppTheme.paper,
+      backgroundColor: colors.paper,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 18),
@@ -59,6 +60,12 @@ class AppDrawer extends StatelessWidget {
                 selected: currentSection == AppDrawerSection.settings,
                 onTap: () => _go(context, '/settings'),
               ),
+              _DrawerTile(
+                icon: Icons.info_outline_rounded,
+                title: 'About',
+                selected: currentSection == AppDrawerSection.about,
+                onTap: () => _go(context, '/about'),
+              ),
             ],
           ),
         ),
@@ -67,9 +74,11 @@ class AppDrawer extends StatelessWidget {
   }
 
   void _go(BuildContext context, String location) {
+    final router = GoRouter.of(context);
+    final currentLocation = GoRouterState.of(context).uri.toString();
     Navigator.of(context).pop();
-    if (GoRouterState.of(context).uri.toString() != location) {
-      context.go(location);
+    if (currentLocation != location) {
+      router.go(location);
     }
   }
 }
@@ -89,11 +98,12 @@ class _DrawerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Material(
         color: selected
-            ? AppTheme.mist.withValues(alpha: 0.65)
+            ? colors.mist.withValues(alpha: 0.65)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
@@ -103,7 +113,7 @@ class _DrawerTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             child: Row(
               children: [
-                Icon(icon, color: AppTheme.ink),
+                Icon(icon, color: colors.ink),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(

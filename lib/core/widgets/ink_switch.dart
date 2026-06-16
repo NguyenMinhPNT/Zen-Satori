@@ -10,10 +10,11 @@ class InkSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: CustomPaint(
-        painter: _SwitchPainter(value: value),
+        painter: _SwitchPainter(value: value, colors: colors),
         child: SizedBox(
           width: 68,
           height: 34,
@@ -24,9 +25,11 @@ class InkSwitch extends StatelessWidget {
               height: 29,
               margin: const EdgeInsets.symmetric(horizontal: 2.5),
               decoration: BoxDecoration(
-                color: value ? const Color(0xFFD8F1E9) : AppTheme.mist,
+                color: value
+                    ? Color.lerp(colors.sage, colors.paper, 0.6) ?? colors.sage
+                    : colors.mist,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.inkSoft, width: 1.2),
+                border: Border.all(color: colors.inkSoft, width: 1.2),
               ),
             ),
           ),
@@ -37,14 +40,15 @@ class InkSwitch extends StatelessWidget {
 }
 
 class _SwitchPainter extends CustomPainter {
-  const _SwitchPainter({required this.value});
+  const _SwitchPainter({required this.value, required this.colors});
 
   final bool value;
+  final AppColors colors;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.ink.withValues(alpha: value ? 0.72 : 0.36)
+      ..color = colors.ink.withValues(alpha: value ? 0.72 : 0.36)
       ..strokeWidth = 11
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(
@@ -56,6 +60,6 @@ class _SwitchPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SwitchPainter oldDelegate) {
-    return oldDelegate.value != value;
+    return oldDelegate.value != value || oldDelegate.colors != colors;
   }
 }

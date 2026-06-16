@@ -37,20 +37,27 @@ class StatsScreen extends StatelessWidget {
               builder: (context, snapshot) {
                 final sessions = snapshot.data ?? const <FocusSession>[];
                 final daily = _lastSevenDays(sessions);
+                final colors = AppTheme.of(context);
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Text('Insights', style: TextStyle(fontSize: 25)),
-                        Text('Last 7 Days ▾', style: TextStyle(fontSize: 15)),
+                        Text('Last 7 Days', style: TextStyle(fontSize: 15)),
                       ],
                     ),
                     const SizedBox(height: 18),
-                    SizedBox(height: 250, child: _StatsChart(minutes: daily)),
+                    SizedBox(
+                      height: 250,
+                      child: _StatsChart(minutes: daily, colors: colors),
+                    ),
                     const SizedBox(height: 24),
-                    SizedBox(height: 150, child: _HeatMap(sessions: sessions)),
+                    SizedBox(
+                      height: 150,
+                      child: _HeatMap(sessions: sessions, colors: colors),
+                    ),
                   ],
                 );
               },
@@ -79,28 +86,30 @@ class StatsScreen extends StatelessWidget {
 }
 
 class _StatsChart extends StatelessWidget {
-  const _StatsChart({required this.minutes});
+  const _StatsChart({required this.minutes, required this.colors});
 
   final List<int> minutes;
+  final AppColors colors;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _StatsChartPainter(minutes),
+      painter: _StatsChartPainter(minutes, colors),
       child: const SizedBox.expand(),
     );
   }
 }
 
 class _StatsChartPainter extends CustomPainter {
-  const _StatsChartPainter(this.minutes);
+  const _StatsChartPainter(this.minutes, this.colors);
 
   final List<int> minutes;
+  final AppColors colors;
 
   @override
   void paint(Canvas canvas, Size size) {
     final axis = Paint()
-      ..color = AppTheme.ink.withValues(alpha: 0.18)
+      ..color = colors.ink.withValues(alpha: 0.18)
       ..strokeWidth = 1;
     for (var index = 0; index < 5; index += 1) {
       final y = 18 + (size.height - 48) * index / 4;
@@ -112,13 +121,16 @@ class _StatsChartPainter extends CustomPainter {
       (a, b) => a > b ? a : b,
     )).clamp(60, 240);
     final barPaint = Paint()
-      ..shader = const LinearGradient(
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0xFF101010), Color(0xFFBAB7AD)],
+        colors: [
+          colors.ink.withValues(alpha: 0.92),
+          colors.mist.withValues(alpha: 0.9),
+        ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     final linePaint = Paint()
-      ..color = AppTheme.sage
+      ..color = colors.sage
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
     final path = Path();
@@ -149,7 +161,7 @@ class _StatsChartPainter extends CustomPainter {
       final x = 48 + index * ((size.width - 72) / 6);
       textPainter.text = TextSpan(
         text: labels[index],
-        style: const TextStyle(color: AppTheme.ink, fontSize: 12),
+        style: TextStyle(color: colors.ink, fontSize: 12),
       );
       textPainter.layout();
       textPainter.paint(
@@ -161,28 +173,30 @@ class _StatsChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _StatsChartPainter oldDelegate) {
-    return oldDelegate.minutes != minutes;
+    return oldDelegate.minutes != minutes || oldDelegate.colors != colors;
   }
 }
 
 class _HeatMap extends StatelessWidget {
-  const _HeatMap({required this.sessions});
+  const _HeatMap({required this.sessions, required this.colors});
 
   final List<FocusSession> sessions;
+  final AppColors colors;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _HeatMapPainter(sessions),
+      painter: _HeatMapPainter(sessions, colors),
       child: const SizedBox.expand(),
     );
   }
 }
 
 class _HeatMapPainter extends CustomPainter {
-  const _HeatMapPainter(this.sessions);
+  const _HeatMapPainter(this.sessions, this.colors);
 
   final List<FocusSession> sessions;
+  final AppColors colors;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -193,7 +207,7 @@ class _HeatMapPainter extends CustomPainter {
       for (var column = 0; column < columns; column += 1) {
         final strength = ((row + column + sessions.length) % 5) / 4;
         final paint = Paint()
-          ..color = Color.lerp(AppTheme.mist, AppTheme.ink, strength * 0.8)!;
+          ..color = Color.lerp(colors.mist, colors.ink, strength * 0.8)!;
         canvas.drawRect(
           Rect.fromLTWH(
             36 + column * cell,
@@ -210,7 +224,7 @@ class _HeatMapPainter extends CustomPainter {
     for (var index = 0; index < labels.length; index += 1) {
       textPainter.text = TextSpan(
         text: labels[index],
-        style: const TextStyle(color: AppTheme.ink, fontSize: 10),
+        style: TextStyle(color: colors.ink, fontSize: 10),
       );
       textPainter.layout();
       textPainter.paint(canvas, Offset(0, 14 + index * (cell + 3)));
@@ -219,6 +233,7 @@ class _HeatMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _HeatMapPainter oldDelegate) {
-    return oldDelegate.sessions.length != sessions.length;
+    return oldDelegate.sessions.length != sessions.length ||
+        oldDelegate.colors != colors;
   }
 }

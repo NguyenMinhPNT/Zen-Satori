@@ -82,15 +82,16 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Column(
       children: [
         Expanded(
           child: CustomPaint(
-            painter: _BadgeRingPainter(unlocked: unlocked),
+            painter: _BadgeRingPainter(unlocked: unlocked, colors: colors),
             child: Center(
               child: unlocked
                   ? Image.asset(AppAssets.lotus, width: 54)
-                  : const Icon(Icons.lock, size: 34, color: AppTheme.paper),
+                  : Icon(Icons.lock, size: 34, color: colors.paper),
             ),
           ),
         ),
@@ -102,7 +103,7 @@ class _Badge extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 12,
-            color: unlocked ? AppTheme.ink : AppTheme.inkSoft,
+            color: unlocked ? colors.ink : colors.inkSoft,
           ),
         ),
       ],
@@ -111,16 +112,15 @@ class _Badge extends StatelessWidget {
 }
 
 class _BadgeRingPainter extends CustomPainter {
-  const _BadgeRingPainter({required this.unlocked});
+  const _BadgeRingPainter({required this.unlocked, required this.colors});
 
   final bool unlocked;
+  final AppColors colors;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = unlocked
-          ? AppTheme.ink.withValues(alpha: 0.78)
-          : AppTheme.inkSoft
+      ..color = unlocked ? colors.ink.withValues(alpha: 0.78) : colors.inkSoft
       ..style = PaintingStyle.stroke
       ..strokeWidth = 10
       ..strokeCap = StrokeCap.round;
@@ -131,7 +131,7 @@ class _BadgeRingPainter extends CustomPainter {
     );
     canvas.drawArc(rect, 0.35, 5.1, false, paint);
     if (!unlocked) {
-      final fill = Paint()..color = AppTheme.ink.withValues(alpha: 0.45);
+      final fill = Paint()..color = colors.ink.withValues(alpha: 0.45);
       canvas.drawCircle(
         Offset(size.width / 2, size.height / 2),
         size.shortestSide / 3,
@@ -142,6 +142,6 @@ class _BadgeRingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BadgeRingPainter oldDelegate) {
-    return oldDelegate.unlocked != unlocked;
+    return oldDelegate.unlocked != unlocked || oldDelegate.colors != colors;
   }
 }

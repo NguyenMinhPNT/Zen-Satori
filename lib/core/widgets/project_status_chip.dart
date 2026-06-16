@@ -10,11 +10,12 @@ class ProjectStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     final color = switch (status) {
-      ProjectStatus.ongoing => AppTheme.sage,
-      ProjectStatus.suspended => AppTheme.amber,
-      ProjectStatus.finished => AppTheme.mist,
-      ProjectStatus.cancel => AppTheme.clay,
+      ProjectStatus.ongoing => colors.sage,
+      ProjectStatus.suspended => colors.amber,
+      ProjectStatus.finished => colors.mist,
+      ProjectStatus.cancel => colors.clay,
     };
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -25,10 +26,10 @@ class ProjectStatusChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
         child: Text(
           status.label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: AppTheme.ink,
+            color: colors.ink,
             letterSpacing: 0,
           ),
         ),

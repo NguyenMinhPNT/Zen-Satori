@@ -18,15 +18,19 @@ class ZenAppScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Scaffold(
       drawer: drawer,
       extendBody: bottomNavigationBar != null,
       body: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppTheme.paper, Color(0xFFF7F5EE)],
+            colors: [
+              colors.paper,
+              Color.lerp(colors.paper, colors.paperWarm, 0.7) ?? colors.paper,
+            ],
           ),
         ),
         child: useSafeArea ? SafeArea(child: child) : child,

@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/about/presentation/about_screen.dart';
 import '../../features/achievements/presentation/achievements_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/home_tab.dart';
@@ -42,6 +43,7 @@ GoRouter createRouter({String initialLocation = '/splash'}) {
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
       ),
+      GoRoute(path: '/about', builder: (context, state) => const AboutScreen()),
     ],
   );
 }

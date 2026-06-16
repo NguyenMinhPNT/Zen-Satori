@@ -59,6 +59,13 @@ class SessionRepository {
     return query.watch();
   }
 
+  Stream<List<FocusSession>> watchSessionsForProject(int projectId) {
+    final query = _database.select(_database.focusSessions)
+      ..where((session) => session.projectId.equals(projectId))
+      ..orderBy([(session) => OrderingTerm.desc(session.startedAt)]);
+    return query.watch();
+  }
+
   Future<List<FocusSession>> getSessions() {
     final query = _database.select(_database.focusSessions)
       ..orderBy([(session) => OrderingTerm.desc(session.startedAt)]);

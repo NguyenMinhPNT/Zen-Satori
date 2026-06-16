@@ -154,6 +154,7 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -242,7 +243,7 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: _confirmDelete,
-              style: TextButton.styleFrom(foregroundColor: AppTheme.clay),
+              style: TextButton.styleFrom(foregroundColor: colors.clay),
               child: const Text('Delete Project'),
             ),
           ],

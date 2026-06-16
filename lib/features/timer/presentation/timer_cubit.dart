@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/quotes/quote_entry.dart';
+import '../../../core/quotes/quote_repository.dart';
 import '../domain/session_repository.dart';
 import '../domain/session_models.dart';
 
@@ -23,6 +26,7 @@ class PomodoroTimerState extends Equatable {
     this.projectId,
     this.workStartedAt,
     this.workPersisted = false,
+    this.activeQuote,
   });
 
   final PomodoroTimerPhase phase;
@@ -30,6 +34,7 @@ class PomodoroTimerState extends Equatable {
   final int? projectId;
   final DateTime? workStartedAt;
   final bool workPersisted;
+  final QuoteEntry? activeQuote;
 
   bool get isRunning {
     return phase == PomodoroTimerPhase.workRunning ||
@@ -48,7 +53,9 @@ class PomodoroTimerState extends Equatable {
     int? projectId,
     DateTime? workStartedAt,
     bool? workPersisted,
+    QuoteEntry? activeQuote,
     bool clearProject = false,
+    bool clearQuote = false,
   }) {
     return PomodoroTimerState(
       phase: phase ?? this.phase,
@@ -56,33 +63,52 @@ class PomodoroTimerState extends Equatable {
       projectId: clearProject ? null : projectId ?? this.projectId,
       workStartedAt: workStartedAt ?? this.workStartedAt,
       workPersisted: workPersisted ?? this.workPersisted,
+      activeQuote: clearQuote ? null : activeQuote ?? this.activeQuote,
     );
   }
 
   @override
   List<Object?> get props {
-    return [phase, remainingSeconds, projectId, workStartedAt, workPersisted];
+    return [
+      phase,
+      remainingSeconds,
+      projectId,
+      workStartedAt,
+      workPersisted,
+      activeQuote,
+    ];
   }
 }
 
 class PomodoroTimerCubit extends Cubit<PomodoroTimerState> {
-  PomodoroTimerCubit(this._sessionRepository)
-    : super(const PomodoroTimerState());
+  PomodoroTimerCubit(
+    this._sessionRepository, {
+    required QuoteRepository quoteRepository,
+  }) : _quoteRepository = quoteRepository,
+       super(const PomodoroTimerState());
 
   static const workSeconds = 25 * 60;
   static const relaxSeconds = 5 * 60;
 
   final SessionRepository _sessionRepository;
+  final QuoteRepository _quoteRepository;
   Timer? _ticker;
+  int _startRequestId = 0;
 
-  void startWork(int projectId) {
+  Future<void> startWork(int projectId, {Locale? locale}) async {
     _ticker?.cancel();
+    final requestId = ++_startRequestId;
+    final activeQuote = await _quoteRepository.pickRandom(locale: locale);
+    if (requestId != _startRequestId) {
+      return;
+    }
     emit(
       PomodoroTimerState(
         phase: PomodoroTimerPhase.workRunning,
         remainingSeconds: workSeconds,
         projectId: projectId,
         workStartedAt: DateTime.now(),
+        activeQuote: activeQuote,
       ),
     );
     _startTicker();
@@ -125,6 +151,7 @@ class PomodoroTimerCubit extends Cubit<PomodoroTimerState> {
 
   void reset() {
     _ticker?.cancel();
+    _startRequestId += 1;
     emit(const PomodoroTimerState());
   }
 

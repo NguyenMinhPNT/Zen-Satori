@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/quotes/widgets/centered_quote_panel.dart';
 import '../../home/presentation/home_tab.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/zen_header.dart';
@@ -27,15 +28,19 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
       final project = context.read<ProjectCubit>().state.selectedProject;
       if (mounted && project != null && !_started) {
         _started = true;
-        context.read<PomodoroTimerCubit>().startWork(project.id);
+        context.read<PomodoroTimerCubit>().startWork(
+          project.id,
+          locale: Localizations.maybeLocaleOf(context),
+        );
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.paper,
+      backgroundColor: colors.paper,
       body: SafeArea(
         child: BlocBuilder<PomodoroTimerCubit, PomodoroTimerState>(
           builder: (context, state) {
@@ -76,40 +81,45 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 8, 24, 34),
-                      child: Stack(
-                        children: [
-                          Center(
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                final timerFontSize =
-                                    (constraints.maxWidth * 0.26).clamp(
-                                      64.0,
-                                      112.0,
-                                    );
-                                return FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    state.displayTime,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: timerFontSize,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: -1.5,
-                                      height: 0.95,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final timerFontSize = (constraints.maxWidth * 0.26)
+                              .clamp(64.0, 112.0);
+                          final quoteHeight = (constraints.maxHeight * 0.32)
+                              .clamp(160.0, 230.0);
+                          return Column(
+                            children: [
+                              SizedBox(
+                                height: quoteHeight,
+                                child: CenteredQuotePanel(
+                                  quote: state.activeQuote,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Expanded(
+                                child: Center(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      state.displayTime,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: timerFontSize,
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: -1.5,
+                                        height: 0.95,
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: _PomodoroTimerActions(
-                              state: state,
-                              originTab: widget.originTab,
-                            ),
-                          ),
-                        ],
+                                ),
+                              ),
+                              _PomodoroTimerActions(
+                                state: state,
+                                originTab: widget.originTab,
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ),

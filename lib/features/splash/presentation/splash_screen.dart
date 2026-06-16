@@ -37,8 +37,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.paper,
+      backgroundColor: colors.paper,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
@@ -55,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              const ColoredBox(color: AppTheme.paper),
+              ColoredBox(color: colors.paper),
               Positioned(
                 left: (width - artworkWidth) / 2,
                 right: (width - artworkWidth) / 2,
@@ -90,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     TextButton(
                       onPressed: _isNavigating ? null : _begin,
                       style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.ink,
+                        foregroundColor: colors.ink,
                         padding: EdgeInsets.zero,
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,

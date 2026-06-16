@@ -9,6 +9,10 @@ import '../../projects/presentation/project_cubit.dart';
 import '../domain/session_models.dart';
 import 'flowtime_cubit.dart';
 
+const _mutedTerracotta = Color(0xFFC27A73);
+const _sageGreen = Color(0xFFA2B59F);
+const _warmBeige = Color(0xFFE5D3B3);
+
 class FlowtimerScreen extends StatefulWidget {
   const FlowtimerScreen({super.key, required this.originTab});
 
@@ -65,8 +69,9 @@ class _FlowtimerScreenState extends State<FlowtimerScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.paper,
+      backgroundColor: colors.paper,
       body: SafeArea(
         child: BlocBuilder<FlowtimeCubit, FlowtimeState>(
           builder: (context, state) {
@@ -148,18 +153,23 @@ class _FlowHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFF2EEE2), Color(0xFFF9F8F2)],
+          colors: [
+            Color.lerp(colors.paperWarm, colors.paper, 0.15) ??
+                colors.paperWarm,
+            Color.lerp(colors.paper, colors.mist, 0.24) ?? colors.paper,
+          ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.ink.withValues(alpha: 0.12)),
+        border: Border.all(color: colors.ink.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.ink.withValues(alpha: 0.05),
+            color: colors.ink.withValues(alpha: 0.05),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -177,13 +187,13 @@ class _FlowHeroCard extends StatelessWidget {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.ink,
+                    color: colors.ink,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     state.phaseLabel,
-                    style: const TextStyle(
-                      color: AppTheme.paper,
+                    style: TextStyle(
+                      color: colors.paper,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -192,8 +202,8 @@ class _FlowHeroCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   projectTitle,
-                  style: const TextStyle(
-                    color: AppTheme.inkSoft,
+                  style: TextStyle(
+                    color: colors.inkSoft,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -215,9 +225,9 @@ class _FlowHeroCard extends StatelessWidget {
             Text(
               _subtitleForState(state),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 17,
-                color: AppTheme.inkSoft,
+                color: colors.inkSoft,
                 height: 1.35,
               ),
             ),
@@ -255,11 +265,12 @@ class _BreakSuggestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final breakText = '${state.suggestedBreakMinutes} min break';
+    final colors = AppTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.sage.withValues(alpha: 0.14),
+        color: colors.sage.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppTheme.sage.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.sage.withValues(alpha: 0.3)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -269,7 +280,7 @@ class _BreakSuggestionCard extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: AppTheme.paper,
+                color: colors.paper,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(Icons.spa_outlined),
@@ -289,9 +300,9 @@ class _BreakSuggestionCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Flowtime legend: <=25m = 5m, <=50m = 8m, <=90m = 10m, >90m = 15m.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppTheme.inkSoft,
+                      color: colors.inkSoft,
                       height: 1.3,
                     ),
                   ),
@@ -312,11 +323,12 @@ class _ActiveInterruptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.amber.withValues(alpha: 0.18),
+        color: colors.amber.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.amber.withValues(alpha: 0.34)),
+        border: Border.all(color: colors.amber.withValues(alpha: 0.34)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -335,7 +347,7 @@ class _ActiveInterruptionCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     interruption.type.label,
-                    style: const TextStyle(color: AppTheme.inkSoft),
+                    style: TextStyle(color: colors.inkSoft),
                   ),
                 ],
               ),
@@ -354,11 +366,12 @@ class _CurrentInterruptionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.paperWarm,
+        color: colors.paperWarm,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppTheme.ink.withValues(alpha: 0.1)),
+        border: Border.all(color: colors.ink.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -402,15 +415,19 @@ class _FlowActions extends StatelessWidget {
             state.phase == FlowtimePhase.focusPaused)
           FilledButton.icon(
             onPressed: cubit.stopFocusAndSuggestBreak,
-            icon: const Icon(Icons.spa_outlined),
+            icon: const Icon(Icons.local_cafe_outlined),
             label: const Text('Take a Break'),
           ),
         if (state.phase == FlowtimePhase.focusing ||
             state.phase == FlowtimePhase.breakRunning)
-          OutlinedButton.icon(
+          FilledButton.icon(
             onPressed: cubit.pause,
             icon: const Icon(Icons.pause),
             label: const Text('Pause'),
+            style: FilledButton.styleFrom(
+              backgroundColor: _sageGreen,
+              foregroundColor: Colors.black,
+            ),
           ),
         if (state.phase == FlowtimePhase.focusPaused ||
             state.phase == FlowtimePhase.breakPaused)
@@ -433,11 +450,11 @@ class _FlowActions extends StatelessWidget {
           ),
         if (state.phase == FlowtimePhase.focusing ||
             state.phase == FlowtimePhase.focusPaused)
-          OutlinedButton.icon(
+          FilledButton.icon(
             onPressed: () => _handleInterruption(context),
             icon: Icon(
               state.activeInterruption == null
-                  ? Icons.notification_add_outlined
+                  ? Icons.eco_outlined
                   : Icons.notifications_off_outlined,
             ),
             label: Text(
@@ -445,12 +462,20 @@ class _FlowActions extends StatelessWidget {
                   ? 'Log Interruption'
                   : 'End Interruption',
             ),
+            style: FilledButton.styleFrom(
+              backgroundColor: _warmBeige,
+              foregroundColor: Colors.black,
+            ),
           ),
         if (state.phase != FlowtimePhase.idle)
-          OutlinedButton.icon(
+          FilledButton.icon(
             onPressed: () => _confirmEndSession(context),
             icon: const Icon(Icons.close),
             label: const Text('End Session'),
+            style: FilledButton.styleFrom(
+              backgroundColor: _mutedTerracotta,
+              foregroundColor: Colors.black,
+            ),
           ),
       ],
     );
@@ -465,7 +490,7 @@ class _FlowActions extends StatelessWidget {
     final draft = await showModalBottomSheet<_InterruptionDraft>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.paper,
+      backgroundColor: AppTheme.of(context).paper,
       builder: (_) => const _InterruptionSheet(),
     );
     if (draft != null && context.mounted) {
@@ -517,11 +542,12 @@ class _SessionJournal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.paperWarm.withValues(alpha: 0.72),
+        color: colors.paperWarm.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppTheme.ink.withValues(alpha: 0.08)),
+        border: Border.all(color: colors.ink.withValues(alpha: 0.08)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -533,15 +559,15 @@ class _SessionJournal extends StatelessWidget {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Completed blocks and interruptions stay visible here while the session is open.',
-              style: TextStyle(color: AppTheme.inkSoft, height: 1.35),
+              style: TextStyle(color: colors.inkSoft, height: 1.35),
             ),
             const SizedBox(height: 16),
             if (blocks.isEmpty)
-              const Text(
+              Text(
                 'No completed blocks yet.',
-                style: TextStyle(color: AppTheme.inkSoft),
+                style: TextStyle(color: colors.inkSoft),
               )
             else
               for (final block in blocks.reversed) ...[
@@ -562,11 +588,12 @@ class _JournalBlockCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.paper,
+        color: colors.paper,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppTheme.ink.withValues(alpha: 0.08)),
+        border: Border.all(color: colors.ink.withValues(alpha: 0.08)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -580,13 +607,13 @@ class _JournalBlockCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               '${_formatTime(block.startedAt)} - ${_formatTime(block.endedAt)}',
-              style: const TextStyle(color: AppTheme.inkSoft),
+              style: TextStyle(color: colors.inkSoft),
             ),
             const SizedBox(height: 10),
             if (block.interruptions.isEmpty)
-              const Text(
+              Text(
                 'No interruptions logged.',
-                style: TextStyle(color: AppTheme.inkSoft),
+                style: TextStyle(color: colors.inkSoft),
               )
             else
               for (final interruption in block.interruptions)

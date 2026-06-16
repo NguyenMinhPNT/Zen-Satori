@@ -47,6 +47,7 @@ class ProjectsTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     return Column(
       children: [
         Padding(
@@ -57,7 +58,7 @@ class ProjectsTabContent extends StatelessWidget {
               prefixIcon: const Icon(Icons.search),
               hintText: 'Search',
               filled: true,
-              fillColor: AppTheme.mist.withValues(alpha: 0.62),
+              fillColor: colors.mist.withValues(alpha: 0.62),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide.none,
@@ -100,7 +101,7 @@ class ProjectsTabContent extends StatelessWidget {
 
                       return Divider(
                         height: 1,
-                        color: AppTheme.ink.withValues(alpha: 0.22),
+                        color: colors.ink.withValues(alpha: 0.22),
                       );
                     },
                     itemBuilder: (context, index) {
@@ -110,12 +111,10 @@ class ProjectsTabContent extends StatelessWidget {
                           child: Center(
                             child: DecoratedBox(
                               decoration: BoxDecoration(
-                                color: AppTheme.paperWarm.withValues(
-                                  alpha: 0.92,
-                                ),
+                                color: colors.paperWarm.withValues(alpha: 0.92),
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
-                                  color: AppTheme.ink.withValues(alpha: 0.12),
+                                  color: colors.ink.withValues(alpha: 0.12),
                                 ),
                               ),
                               child: IconButton(

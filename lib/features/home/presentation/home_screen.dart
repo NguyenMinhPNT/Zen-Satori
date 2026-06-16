@@ -157,6 +157,7 @@ class _FocusDashboard extends StatelessWidget {
     return BlocBuilder<ProjectCubit, ProjectState>(
       builder: (context, state) {
         final selectedProject = state.selectedProject;
+        final colors = AppTheme.of(context);
         return LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxHeight < 520;
@@ -198,8 +199,8 @@ class _FocusDashboard extends StatelessWidget {
                       style: kaushan(
                         size: modeSize,
                         color: selectedProject == null
-                            ? AppTheme.ink.withValues(alpha: 0.45)
-                            : AppTheme.ink,
+                            ? colors.ink.withValues(alpha: 0.45)
+                            : colors.ink,
                       ),
                     ),
                     SizedBox(height: compact ? 8 : 14),
@@ -281,15 +282,16 @@ class _ProjectSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     final ongoingProjects = state.ongoingProjects;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.paper.withValues(alpha: 0.88),
-        border: Border.all(color: AppTheme.inkSoft.withValues(alpha: 0.2)),
+        color: colors.paper.withValues(alpha: 0.88),
+        border: Border.all(color: colors.inkSoft.withValues(alpha: 0.2)),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.ink.withValues(alpha: 0.05),
+            color: colors.ink.withValues(alpha: 0.05),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -345,9 +347,15 @@ class _HomeStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<FocusSession>>(
-      stream: context.read<SessionRepository>().watchSessions(),
+      stream: project == null
+          ? null
+          : context.read<SessionRepository>().watchSessionsForProject(
+              project!.id,
+            ),
       builder: (context, snapshot) {
-        final sessions = snapshot.data ?? const <FocusSession>[];
+        final sessions = project == null
+            ? const <FocusSession>[]
+            : snapshot.data ?? const <FocusSession>[];
         final now = DateTime.now();
         final todayMinutes = sessions
             .where((session) => _isSameDay(session.startedAt, now))
@@ -392,10 +400,8 @@ class _HomeStats extends StatelessWidget {
   String _formatMinutes(int minutes) {
     final hours = minutes ~/ 60;
     final rest = minutes % 60;
-    if (hours == 0) {
-      return '${rest}m';
-    }
-    return '${hours}h ${rest}m';
+    final paddedMinutes = rest.toString().padLeft(2, '0');
+    return '${hours}h${paddedMinutes}m';
   }
 }
 
@@ -406,29 +412,34 @@ class _HomeBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     const scale = 0.765;
     const items = [
-      _HomeNavItem(HomeTab.projects, AppAssets.projectNavIcon),
-      _HomeNavItem(HomeTab.pomodoro, AppAssets.pomodoroNavIcon),
-      _HomeNavItem(HomeTab.guruAi, AppAssets.guruAiNavIcon),
-      _HomeNavItem(HomeTab.flowtime, AppAssets.ensoCircle),
-      _HomeNavItem(HomeTab.zen, AppAssets.zenIcon),
+      _HomeNavItem.icon(HomeTab.projects, Icons.menu_book_rounded),
+      _HomeNavItem.asset(HomeTab.pomodoro, AppAssets.pomodoroNavIcon),
+      _HomeNavItem.asset(HomeTab.guruAi, AppAssets.guruAiNavIcon),
+      _HomeNavItem.asset(HomeTab.flowtime, AppAssets.ensoCircle),
+      _HomeNavItem.asset(HomeTab.zen, AppAssets.zenIcon),
     ];
 
     return Padding(
       padding: EdgeInsets.fromLTRB(8 * scale, 0, 8 * scale, 12 * scale),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFF6F6F3), Color(0xFFD9D9D4)],
+            colors: [
+              Color.lerp(colors.paper, colors.paperWarm, 0.35) ?? colors.paper,
+              Color.lerp(colors.paperWarm, colors.mist, 0.75) ??
+                  colors.paperWarm,
+            ],
           ),
           borderRadius: BorderRadius.circular(34 * scale),
-          border: Border.all(color: AppTheme.ink.withValues(alpha: 0.12)),
+          border: Border.all(color: colors.ink.withValues(alpha: 0.12)),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.ink.withValues(alpha: 0.12),
+              color: colors.ink.withValues(alpha: 0.12),
               blurRadius: 22 * scale,
               offset: Offset(0, 10 * scale),
             ),
@@ -475,6 +486,7 @@ class _BottomNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
     const scale = 0.765;
     return InkWell(
       onTap: onTap,
@@ -484,12 +496,18 @@ class _BottomNavButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(
-              item.assetPath,
-              width: (item.tab == HomeTab.flowtime ? 46 : 42) * scale,
-              height: (item.tab == HomeTab.flowtime ? 46 : 42) * scale,
-              fit: BoxFit.contain,
-            ),
+            if (item.assetPath != null)
+              Image.asset(
+                item.assetPath!,
+                width: (item.tab == HomeTab.flowtime ? 46 : 42) * scale,
+                height: (item.tab == HomeTab.flowtime ? 46 : 42) * scale,
+                fit: BoxFit.contain,
+              )
+            else
+              Icon(
+                item.iconData,
+                size: (item.tab == HomeTab.flowtime ? 46 : 42) * scale,
+              ),
             SizedBox(height: 6 * scale),
             Text(
               item.tab.label,
@@ -506,7 +524,7 @@ class _BottomNavButton extends StatelessWidget {
                 width: 56 * scale,
                 height: 5 * scale,
                 decoration: BoxDecoration(
-                  color: AppTheme.ink,
+                  color: colors.ink,
                   borderRadius: BorderRadius.circular(999 * scale),
                 ),
               ),
@@ -519,8 +537,10 @@ class _BottomNavButton extends StatelessWidget {
 }
 
 class _HomeNavItem {
-  const _HomeNavItem(this.tab, this.assetPath);
+  const _HomeNavItem.asset(this.tab, this.assetPath) : iconData = null;
+  const _HomeNavItem.icon(this.tab, this.iconData) : assetPath = null;
 
   final HomeTab tab;
-  final String assetPath;
+  final String? assetPath;
+  final IconData? iconData;
 }

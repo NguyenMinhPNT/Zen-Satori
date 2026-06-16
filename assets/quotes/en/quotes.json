@@ -1,0 +1,602 @@
+[
+  {
+    "id": "focus-001",
+    "category": "focus",
+    "text": "The successful warrior is the average man, with laser-like focus.",
+    "author": "Bruce Lee"
+  },
+  {
+    "id": "focus-002",
+    "category": "focus",
+    "text": "The art of being wise is the art of knowing what to overlook.",
+    "author": "William James"
+  },
+  {
+    "id": "focus-003",
+    "category": "focus",
+    "text": "You have power over your mind, not outside events. Realize this, and you will find strength.",
+    "author": "Marcus Aurelius"
+  },
+  {
+    "id": "focus-004",
+    "category": "focus",
+    "text": "Focus is about saying no.",
+    "author": "Steve Jobs"
+  },
+  {
+    "id": "focus-005",
+    "category": "focus",
+    "text": "Make the best use of what is in your power, and take the rest as it happens.",
+    "author": "Epictetus"
+  },
+  {
+    "id": "focus-006",
+    "category": "focus",
+    "text": "To be everywhere is to be nowhere.",
+    "author": "Seneca"
+  },
+  {
+    "id": "focus-007",
+    "category": "focus",
+    "text": "Clarity about what matters provides clarity about what does not.",
+    "author": "Cal Newport"
+  },
+  {
+    "id": "focus-008",
+    "category": "focus",
+    "text": "Either you run the day or the day runs you.",
+    "author": "Jim Rohn"
+  },
+  {
+    "id": "focus-009",
+    "category": "focus",
+    "text": "Lack of direction, not lack of time, is the problem. We all have twenty-four hour days.",
+    "author": "Zig Ziglar"
+  },
+  {
+    "id": "focus-010",
+    "category": "focus",
+    "text": "What gets scheduled gets done.",
+    "author": "Robin Sharma"
+  },
+  {
+    "id": "focus-011",
+    "category": "focus",
+    "text": "There is nothing so useless as doing efficiently that which should not be done at all.",
+    "author": "Peter Drucker"
+  },
+  {
+    "id": "focus-012",
+    "category": "focus",
+    "text": "The man who chases two rabbits catches neither.",
+    "author": "Chinese Proverb"
+  },
+  {
+    "id": "focus-013",
+    "category": "focus",
+    "text": "Simplicity is the ultimate sophistication.",
+    "author": "Leonardo da Vinci"
+  },
+  {
+    "id": "focus-014",
+    "category": "focus",
+    "text": "Success demands singleness of purpose.",
+    "author": "Gary Keller"
+  },
+  {
+    "id": "focus-015",
+    "category": "focus",
+    "text": "He who has begun is half done.",
+    "author": "Horace"
+  },
+  {
+    "id": "focus-016",
+    "category": "focus",
+    "text": "If people knew how hard I had to work to gain my mastery, it would not seem so wonderful at all.",
+    "author": "Michelangelo"
+  },
+  {
+    "id": "focus-017",
+    "category": "focus",
+    "text": "Do not let what you cannot do interfere with what you can do.",
+    "author": "John Wooden"
+  },
+  {
+    "id": "focus-018",
+    "category": "focus",
+    "text": "Concentrate the radiance of the mind.",
+    "author": "Ralph Waldo Emerson"
+  },
+  {
+    "id": "focus-019",
+    "category": "focus",
+    "text": "Obstacles are those frightful things you see when you take your eyes off your goal.",
+    "author": "Henry Ford"
+  },
+  {
+    "id": "focus-020",
+    "category": "focus",
+    "text": "Victorious warriors win first and then go to war.",
+    "author": "Sun Tzu"
+  },
+  {
+    "id": "perseverance-001",
+    "category": "perseverance",
+    "text": "It does not matter how slowly you go as long as you do not stop.",
+    "author": "Confucius"
+  },
+  {
+    "id": "perseverance-002",
+    "category": "perseverance",
+    "text": "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    "author": "Winston Churchill"
+  },
+  {
+    "id": "perseverance-003",
+    "category": "perseverance",
+    "text": "Genius is one percent inspiration and ninety-nine percent perspiration.",
+    "author": "Thomas Edison"
+  },
+  {
+    "id": "perseverance-004",
+    "category": "perseverance",
+    "text": "Ever tried. Ever failed. No matter. Try again. Fail again. Fail better.",
+    "author": "Samuel Beckett"
+  },
+  {
+    "id": "perseverance-005",
+    "category": "perseverance",
+    "text": "Do what you can, with what you have, where you are.",
+    "author": "Theodore Roosevelt"
+  },
+  {
+    "id": "perseverance-006",
+    "category": "perseverance",
+    "text": "Never give up, for that is just the place and time that the tide will turn.",
+    "author": "Harriet Beecher Stowe"
+  },
+  {
+    "id": "perseverance-007",
+    "category": "perseverance",
+    "text": "Fall seven times, stand up eight.",
+    "author": "Japanese Proverb"
+  },
+  {
+    "id": "perseverance-008",
+    "category": "perseverance",
+    "text": "It's not whether you get knocked down, it's whether you get up.",
+    "author": "Vince Lombardi"
+  },
+  {
+    "id": "perseverance-009",
+    "category": "perseverance",
+    "text": "It's hard to beat a person who never gives up.",
+    "author": "Babe Ruth"
+  },
+  {
+    "id": "perseverance-010",
+    "category": "perseverance",
+    "text": "It always seems impossible until it's done.",
+    "author": "Nelson Mandela"
+  },
+  {
+    "id": "perseverance-011",
+    "category": "perseverance",
+    "text": "Success is to be measured not so much by the position that one has reached in life as by the obstacles which he has overcome.",
+    "author": "Booker T. Washington"
+  },
+  {
+    "id": "perseverance-012",
+    "category": "perseverance",
+    "text": "Nothing in this world can take the place of persistence.",
+    "author": "Calvin Coolidge"
+  },
+  {
+    "id": "perseverance-013",
+    "category": "perseverance",
+    "text": "The most difficult thing is the decision to act, the rest is merely tenacity.",
+    "author": "Amelia Earhart"
+  },
+  {
+    "id": "perseverance-014",
+    "category": "perseverance",
+    "text": "There is no failure except in no longer trying.",
+    "author": "Orison Swett Marden"
+  },
+  {
+    "id": "perseverance-015",
+    "category": "perseverance",
+    "text": "The heights by great men reached and kept were not attained by sudden flight, but they, while their companions slept, were toiling upward in the night.",
+    "author": "Henry Wadsworth Longfellow"
+  },
+  {
+    "id": "perseverance-016",
+    "category": "perseverance",
+    "text": "I am not afraid of storms, for I am learning how to sail my ship.",
+    "author": "Louisa May Alcott"
+  },
+  {
+    "id": "perseverance-017",
+    "category": "perseverance",
+    "text": "You can never cross the ocean until you have the courage to lose sight of the shore.",
+    "author": "Christopher Columbus"
+  },
+  {
+    "id": "perseverance-018",
+    "category": "perseverance",
+    "text": "It is never too late to be what you might have been.",
+    "author": "George Eliot"
+  },
+  {
+    "id": "perseverance-019",
+    "category": "perseverance",
+    "text": "Practice isn't the thing you do once you're good. It's the thing you do that makes you good.",
+    "author": "Malcolm Gladwell"
+  },
+  {
+    "id": "perseverance-020",
+    "category": "perseverance",
+    "text": "Dream is not that which you see while sleeping, it is something that does not let you sleep.",
+    "author": "A. P. J. Abdul Kalam"
+  },
+  {
+    "id": "mindfulness-001",
+    "category": "mindfulness",
+    "text": "Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.",
+    "author": "Thich Nhat Hanh"
+  },
+  {
+    "id": "mindfulness-002",
+    "category": "mindfulness",
+    "text": "Realize deeply that the present moment is all you ever have.",
+    "author": "Eckhart Tolle"
+  },
+  {
+    "id": "mindfulness-003",
+    "category": "mindfulness",
+    "text": "Wherever you go, there you are.",
+    "author": "Jon Kabat-Zinn"
+  },
+  {
+    "id": "mindfulness-004",
+    "category": "mindfulness",
+    "text": "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.",
+    "author": "Buddha"
+  },
+  {
+    "id": "mindfulness-005",
+    "category": "mindfulness",
+    "text": "If you are depressed you are living in the past. If you are anxious you are living in the future. If you are at peace you are living in the present.",
+    "author": "Lao Tzu"
+  },
+  {
+    "id": "mindfulness-006",
+    "category": "mindfulness",
+    "text": "True happiness is to enjoy the present, without anxious dependence upon the future.",
+    "author": "Seneca"
+  },
+  {
+    "id": "mindfulness-007",
+    "category": "mindfulness",
+    "text": "You can't stop the waves, but you can learn to surf.",
+    "author": "Jon Kabat-Zinn"
+  },
+  {
+    "id": "mindfulness-008",
+    "category": "mindfulness",
+    "text": "Be here now.",
+    "author": "Ram Dass"
+  },
+  {
+    "id": "mindfulness-009",
+    "category": "mindfulness",
+    "text": "You are the sky. Everything else is just the weather.",
+    "author": "Pema Chodron"
+  },
+  {
+    "id": "mindfulness-010",
+    "category": "mindfulness",
+    "text": "Treat every moment as your last. It is not preparation for something else.",
+    "author": "Shunryu Suzuki"
+  },
+  {
+    "id": "mindfulness-011",
+    "category": "mindfulness",
+    "text": "If you can't find the truth right where you are, where else do you expect to find it?",
+    "author": "Dogen"
+  },
+  {
+    "id": "mindfulness-012",
+    "category": "mindfulness",
+    "text": "Mindfulness isn't difficult. We just need to remember to do it.",
+    "author": "Sharon Salzberg"
+  },
+  {
+    "id": "mindfulness-013",
+    "category": "mindfulness",
+    "text": "Mindfulness is the aware, balanced acceptance of the present experience.",
+    "author": "Joseph Goldstein"
+  },
+  {
+    "id": "mindfulness-014",
+    "category": "mindfulness",
+    "text": "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.",
+    "author": "Rumi"
+  },
+  {
+    "id": "mindfulness-015",
+    "category": "mindfulness",
+    "text": "The ability to observe without evaluating is the highest form of intelligence.",
+    "author": "Jiddu Krishnamurti"
+  },
+  {
+    "id": "mindfulness-016",
+    "category": "mindfulness",
+    "text": "When we get too caught up in the busyness of the world, we lose connection with one another and ourselves.",
+    "author": "Jack Kornfield"
+  },
+  {
+    "id": "mindfulness-017",
+    "category": "mindfulness",
+    "text": "If you want to conquer the anxiety of life, live in the moment, live in the breath.",
+    "author": "Amit Ray"
+  },
+  {
+    "id": "mindfulness-018",
+    "category": "mindfulness",
+    "text": "Nothing is really a problem unless we think it is.",
+    "author": "Charlotte Joko Beck"
+  },
+  {
+    "id": "mindfulness-019",
+    "category": "mindfulness",
+    "text": "Drink your tea slowly and reverently, as if it is the axis on which the earth revolves.",
+    "author": "Thich Nhat Hanh"
+  },
+  {
+    "id": "mindfulness-020",
+    "category": "mindfulness",
+    "text": "Peace comes from within. Do not seek it without.",
+    "author": "Buddha"
+  },
+  {
+    "id": "zen-001",
+    "category": "zen",
+    "text": "In the beginner's mind there are many possibilities, in the expert's mind there are few.",
+    "author": "Shunryu Suzuki"
+  },
+  {
+    "id": "zen-002",
+    "category": "zen",
+    "text": "To study the Buddha Way is to study the self.",
+    "author": "Dogen"
+  },
+  {
+    "id": "zen-003",
+    "category": "zen",
+    "text": "Nature does not hurry, yet everything is accomplished.",
+    "author": "Lao Tzu"
+  },
+  {
+    "id": "zen-004",
+    "category": "zen",
+    "text": "Let go or be dragged.",
+    "author": "Zen Proverb"
+  },
+  {
+    "id": "zen-005",
+    "category": "zen",
+    "text": "When walking, walk. When eating, eat.",
+    "author": "Zen Proverb"
+  },
+  {
+    "id": "zen-006",
+    "category": "zen",
+    "text": "Smile, breathe, and go slowly.",
+    "author": "Thich Nhat Hanh"
+  },
+  {
+    "id": "zen-007",
+    "category": "zen",
+    "text": "The rain has stopped, but the clouds still hang heavily in the sky.",
+    "author": "Ryokan"
+  },
+  {
+    "id": "zen-008",
+    "category": "zen",
+    "text": "Many paths lead from the foot of the mountain, but at the peak we all gaze at the single bright moon.",
+    "author": "Ikkyu"
+  },
+  {
+    "id": "zen-009",
+    "category": "zen",
+    "text": "The Great Way is not difficult for those who have no preferences.",
+    "author": "Sengcan"
+  },
+  {
+    "id": "zen-010",
+    "category": "zen",
+    "text": "Muddy water is best cleared by leaving it alone.",
+    "author": "Alan Watts"
+  },
+  {
+    "id": "zen-011",
+    "category": "zen",
+    "text": "Sitting quietly, doing nothing, spring comes, and the grass grows by itself.",
+    "author": "Zen Proverb"
+  },
+  {
+    "id": "zen-012",
+    "category": "zen",
+    "text": "Sometimes your joy is the source of your smile, but sometimes your smile can be the source of your joy.",
+    "author": "Thich Nhat Hanh"
+  },
+  {
+    "id": "zen-013",
+    "category": "zen",
+    "text": "The most important point is to accept yourself and stand on your two feet.",
+    "author": "Shunryu Suzuki"
+  },
+  {
+    "id": "zen-014",
+    "category": "zen",
+    "text": "At the center of your being you have the answer; you know who you are and you know what you want.",
+    "author": "Lao Tzu"
+  },
+  {
+    "id": "zen-015",
+    "category": "zen",
+    "text": "Every day is a journey, and the journey itself is home.",
+    "author": "Matsuo Basho"
+  },
+  {
+    "id": "zen-016",
+    "category": "zen",
+    "text": "The obstacle is the path.",
+    "author": "Zen Proverb"
+  },
+  {
+    "id": "zen-017",
+    "category": "zen",
+    "text": "Not knowing how near the truth is, we seek it far away.",
+    "author": "Hakuin Ekaku"
+  },
+  {
+    "id": "zen-018",
+    "category": "zen",
+    "text": "To carry yourself forward and experience many things is delusion. That many things come forth and experience themselves is awakening.",
+    "author": "Dogen"
+  },
+  {
+    "id": "zen-019",
+    "category": "zen",
+    "text": "The seed of suffering in you may be strong, but don't wait until you have no more suffering before allowing yourself to be happy.",
+    "author": "Thich Nhat Hanh"
+  },
+  {
+    "id": "zen-020",
+    "category": "zen",
+    "text": "Knowing others is intelligence; knowing yourself is true wisdom.",
+    "author": "Lao Tzu"
+  },
+  {
+    "id": "courage-001",
+    "category": "courage",
+    "text": "Life shrinks or expands in proportion to one's courage.",
+    "author": "Anais Nin"
+  },
+  {
+    "id": "courage-002",
+    "category": "courage",
+    "text": "I learned that courage was not the absence of fear, but the triumph over it.",
+    "author": "Nelson Mandela"
+  },
+  {
+    "id": "courage-003",
+    "category": "courage",
+    "text": "Courage is the most important of all the virtues because without courage you can't practice any other virtue consistently.",
+    "author": "Maya Angelou"
+  },
+  {
+    "id": "courage-004",
+    "category": "courage",
+    "text": "Courage, dear heart.",
+    "author": "C. S. Lewis"
+  },
+  {
+    "id": "courage-005",
+    "category": "courage",
+    "text": "Courage is the first of human qualities because it is the quality which guarantees the others.",
+    "author": "Aristotle"
+  },
+  {
+    "id": "courage-006",
+    "category": "courage",
+    "text": "Courage is resistance to fear, mastery of fear, not absence of fear.",
+    "author": "Mark Twain"
+  },
+  {
+    "id": "courage-007",
+    "category": "courage",
+    "text": "You gain strength, courage, and confidence by every experience in which you really stop to look fear in the face.",
+    "author": "Eleanor Roosevelt"
+  },
+  {
+    "id": "courage-008",
+    "category": "courage",
+    "text": "Do the thing you fear and the death of fear is certain.",
+    "author": "Ralph Waldo Emerson"
+  },
+  {
+    "id": "courage-009",
+    "category": "courage",
+    "text": "Sometimes even to live is an act of courage.",
+    "author": "Seneca"
+  },
+  {
+    "id": "courage-010",
+    "category": "courage",
+    "text": "Being deeply loved by someone gives you strength, while loving someone deeply gives you courage.",
+    "author": "Lao Tzu"
+  },
+  {
+    "id": "courage-011",
+    "category": "courage",
+    "text": "Courage is what it takes to stand up and speak; courage is also what it takes to sit down and listen.",
+    "author": "Winston Churchill"
+  },
+  {
+    "id": "courage-012",
+    "category": "courage",
+    "text": "Courage doesn't always roar. Sometimes courage is the quiet voice at the end of the day saying, I will try again tomorrow.",
+    "author": "Mary Anne Radmacher"
+  },
+  {
+    "id": "courage-013",
+    "category": "courage",
+    "text": "Courage is the price that life exacts for granting peace.",
+    "author": "Amelia Earhart"
+  },
+  {
+    "id": "courage-014",
+    "category": "courage",
+    "text": "It is not the strength of the body that counts, but the strength of the spirit.",
+    "author": "J. R. R. Tolkien"
+  },
+  {
+    "id": "courage-015",
+    "category": "courage",
+    "text": "Life is either a daring adventure or nothing at all.",
+    "author": "Helen Keller"
+  },
+  {
+    "id": "courage-016",
+    "category": "courage",
+    "text": "Courage is grace under pressure.",
+    "author": "Ernest Hemingway"
+  },
+  {
+    "id": "courage-017",
+    "category": "courage",
+    "text": "It is hard to fail, but it is worse never to have tried to succeed.",
+    "author": "Theodore Roosevelt"
+  },
+  {
+    "id": "courage-018",
+    "category": "courage",
+    "text": "Real courage is when you know you're licked before you begin, but you begin anyway and see it through no matter what.",
+    "author": "Harper Lee"
+  },
+  {
+    "id": "courage-019",
+    "category": "courage",
+    "text": "Out of suffering have emerged the strongest souls; the most massive characters are seared with scars.",
+    "author": "Kahlil Gibran"
+  },
+  {
+    "id": "courage-020",
+    "category": "courage",
+    "text": "I am not afraid. I was born to do this.",
+    "author": "Joan of Arc"
+  }
+]

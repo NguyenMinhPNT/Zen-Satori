@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_satori/app.dart';
 import 'package:zen_satori/core/database/app_database.dart';
+import 'package:zen_satori/core/quotes/quote_category.dart';
+import 'package:zen_satori/core/quotes/quote_entry.dart';
+import 'package:zen_satori/core/quotes/quote_repository.dart';
 import 'package:zen_satori/core/widgets/enso_button.dart';
 import 'package:zen_satori/features/projects/domain/project_repository.dart';
 import 'package:zen_satori/features/settings/domain/app_preferences.dart';
@@ -57,6 +60,7 @@ void main() {
       '/achievements': 'Path to Satori',
       '/stats': 'Insights',
       '/settings': 'Sounds (Zen Bell)',
+      '/about': 'Focus with a quieter mind.',
     };
 
     for (final entry in routes.entries) {
@@ -97,6 +101,24 @@ void main() {
       find.text('Zen practice content will arrive in a later update.'),
       findsNothing,
     );
+    await _disposeHarness(tester);
+  });
+
+  testWidgets('Drawer navigates to About from another top-level page', (
+    tester,
+  ) async {
+    final harness = await _createHarness(initialLocation: '/settings');
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    expect(find.text('Sounds (Zen Bell)'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu_rounded).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('About'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Focus with a quieter mind.'), findsOneWidget);
     await _disposeHarness(tester);
   });
 
@@ -174,6 +196,41 @@ void main() {
 
     expect(harness.preferences.focusMode, FocusMode.pomodoro);
     expect(find.text('25:00'), findsOneWidget);
+    expect(
+      find.text('"The successful warrior is the average man, with laser-like focus."'),
+      findsOneWidget,
+    );
+    expect(find.text('Bruce Lee'), findsOneWidget);
+    await _disposeHarness(tester);
+  });
+
+  testWidgets('Pomodoro quote uses italic text and places author below it', (
+    tester,
+  ) async {
+    final harness = await _createHarness();
+    await harness.projectRepository.createProject(
+      title: 'Morning Practice',
+      targetMinutes: 120,
+    );
+
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Pomodoro'));
+    await _pumpFrames(tester);
+    await tester.tap(find.byType(EnsoButton));
+    await _pumpFrames(tester);
+
+    final quoteFinder = find.text(
+      '"The successful warrior is the average man, with laser-like focus."',
+    );
+    final authorFinder = find.text('Bruce Lee');
+    final quoteText = tester.widget<Text>(quoteFinder);
+
+    expect(quoteText.style?.fontStyle, FontStyle.italic);
+    expect(quoteText.style?.fontFamily, isNot('KaushanScript'));
+    expect(tester.getTopLeft(authorFinder).dy, greaterThan(tester.getTopLeft(quoteFinder).dy));
+
     await _disposeHarness(tester);
   });
 
@@ -234,9 +291,12 @@ void main() {
     final projectId = await ProjectRepository(
       database,
     ).createProject(title: 'Practice', targetMinutes: 60);
-    final cubit = PomodoroTimerCubit(repository);
+    final cubit = PomodoroTimerCubit(
+      repository,
+      quoteRepository: const _FakeQuoteRepository(_testQuote),
+    );
 
-    cubit.startWork(projectId);
+    await cubit.startWork(projectId);
     await cubit.elapseSeconds(PomodoroTimerCubit.workSeconds);
 
     expect(cubit.state.phase, PomodoroTimerPhase.workCompleteAwaitingRelax);
@@ -261,12 +321,14 @@ class _Harness {
     required this.database,
     required this.projectRepository,
     required this.preferences,
+    required this.quoteRepository,
   });
 
   final Widget app;
   final AppDatabase database;
   final ProjectRepository projectRepository;
   final AppPreferences preferences;
+  final QuoteRepository quoteRepository;
 }
 
 Future<_Harness> _createHarness({
@@ -276,15 +338,18 @@ Future<_Harness> _createHarness({
   SharedPreferences.setMockInitialValues(initialValues);
   final database = AppDatabase(NativeDatabase.memory());
   final preferences = AppPreferences(await SharedPreferences.getInstance());
+  final quoteRepository = const _FakeQuoteRepository(_testQuote);
   return _Harness(
     app: ZenSatoriApp(
       database: database,
       preferences: preferences,
       initialLocation: initialLocation,
+      quoteRepository: quoteRepository,
     ),
     database: database,
     projectRepository: ProjectRepository(database),
     preferences: preferences,
+    quoteRepository: quoteRepository,
   );
 }
 
@@ -298,4 +363,35 @@ Future<void> _pumpFrames(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 120));
   await tester.pump();
+}
+
+const _testQuote = QuoteEntry(
+  id: 'focus-001',
+  text: 'The successful warrior is the average man, with laser-like focus.',
+  author: 'Bruce Lee',
+  category: QuoteCategory.focus,
+);
+
+class _FakeQuoteRepository implements QuoteRepository {
+  const _FakeQuoteRepository(this.quote);
+
+  final QuoteEntry quote;
+
+  @override
+  Future<List<QuoteEntry>> getQuotes({QuoteCategory? category, Locale? locale}) {
+    if (category != null && category != quote.category) {
+      return Future.value(const <QuoteEntry>[]);
+    }
+    return Future.value(<QuoteEntry>[quote]);
+  }
+
+  @override
+  Future<QuoteEntry?> pickRandom({
+    QuoteCategory? category,
+    Locale? locale,
+    random,
+  }) async {
+    final quotes = await getQuotes(category: category, locale: locale);
+    return quotes.isEmpty ? null : quotes.first;
+  }
 }
