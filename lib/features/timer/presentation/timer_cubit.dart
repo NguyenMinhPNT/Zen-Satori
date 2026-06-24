@@ -98,20 +98,25 @@ class PomodoroTimerCubit extends Cubit<PomodoroTimerState> {
   Future<void> startWork(int projectId, {Locale? locale}) async {
     _ticker?.cancel();
     final requestId = ++_startRequestId;
-    final activeQuote = await _quoteRepository.pickRandom(locale: locale);
-    if (requestId != _startRequestId) {
-      return;
-    }
     emit(
       PomodoroTimerState(
         phase: PomodoroTimerPhase.workRunning,
         remainingSeconds: workSeconds,
         projectId: projectId,
         workStartedAt: DateTime.now(),
-        activeQuote: activeQuote,
       ),
     );
     _startTicker();
+    try {
+      final activeQuote = await _quoteRepository.pickRandom(locale: locale);
+      if (requestId != _startRequestId || isClosed) {
+        return;
+      }
+      emit(state.copyWith(activeQuote: activeQuote));
+    } catch (error, stackTrace) {
+      debugPrint('Failed to load Pomodoro quote: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 
   void pause() {

@@ -131,7 +131,7 @@ class _FlowtimerScreenState extends State<FlowtimerScreen>
                       ],
                       const SizedBox(height: 18),
                       _FlowActions(state: state, originTab: widget.originTab),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 28),
                       _SessionJournal(blocks: state.completedBlocks),
                     ],
                   ),
@@ -407,20 +407,20 @@ class _FlowActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<FlowtimeCubit>();
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        if (state.phase == FlowtimePhase.focusing ||
-            state.phase == FlowtimePhase.focusPaused)
-          FilledButton.icon(
+    final actions = <Widget>[
+      if (state.phase == FlowtimePhase.focusing ||
+          state.phase == FlowtimePhase.focusPaused)
+        _FlowActionButton(
+          child: FilledButton.icon(
             onPressed: cubit.stopFocusAndSuggestBreak,
             icon: const Icon(Icons.local_cafe_outlined),
             label: const Text('Take a Break'),
           ),
-        if (state.phase == FlowtimePhase.focusing ||
-            state.phase == FlowtimePhase.breakRunning)
-          FilledButton.icon(
+        ),
+      if (state.phase == FlowtimePhase.focusing ||
+          state.phase == FlowtimePhase.breakRunning)
+        _FlowActionButton(
+          child: FilledButton.icon(
             onPressed: cubit.pause,
             icon: const Icon(Icons.pause),
             label: const Text('Pause'),
@@ -429,28 +429,36 @@ class _FlowActions extends StatelessWidget {
               foregroundColor: Colors.black,
             ),
           ),
-        if (state.phase == FlowtimePhase.focusPaused ||
-            state.phase == FlowtimePhase.breakPaused)
-          OutlinedButton.icon(
+        ),
+      if (state.phase == FlowtimePhase.focusPaused ||
+          state.phase == FlowtimePhase.breakPaused)
+        _FlowActionButton(
+          child: OutlinedButton.icon(
             onPressed: cubit.resume,
             icon: const Icon(Icons.play_arrow),
             label: const Text('Resume'),
           ),
-        if (state.phase == FlowtimePhase.breakSuggested)
-          FilledButton.icon(
+        ),
+      if (state.phase == FlowtimePhase.breakSuggested)
+        _FlowActionButton(
+          child: FilledButton.icon(
             onPressed: cubit.startBreak,
             icon: const Icon(Icons.self_improvement_outlined),
             label: Text('Start ${state.suggestedBreakMinutes}m Break'),
           ),
-        if (state.isBreakPhase || state.phase == FlowtimePhase.finished)
-          FilledButton.icon(
+        ),
+      if (state.isBreakPhase || state.phase == FlowtimePhase.finished)
+        _FlowActionButton(
+          child: FilledButton.icon(
             onPressed: cubit.startNextFocus,
             icon: const Icon(Icons.arrow_forward),
             label: const Text('Next Block'),
           ),
-        if (state.phase == FlowtimePhase.focusing ||
-            state.phase == FlowtimePhase.focusPaused)
-          FilledButton.icon(
+        ),
+      if (state.phase == FlowtimePhase.focusing ||
+          state.phase == FlowtimePhase.focusPaused)
+        _FlowActionButton(
+          child: FilledButton.icon(
             onPressed: () => _handleInterruption(context),
             icon: Icon(
               state.activeInterruption == null
@@ -467,8 +475,10 @@ class _FlowActions extends StatelessWidget {
               foregroundColor: Colors.black,
             ),
           ),
-        if (state.phase != FlowtimePhase.idle)
-          FilledButton.icon(
+        ),
+      if (state.phase != FlowtimePhase.idle)
+        _FlowActionButton(
+          child: FilledButton.icon(
             onPressed: () => _confirmEndSession(context),
             icon: const Icon(Icons.close),
             label: const Text('End Session'),
@@ -477,6 +487,26 @@ class _FlowActions extends StatelessWidget {
               foregroundColor: Colors.black,
             ),
           ),
+        ),
+    ];
+
+    return Column(
+      children: [
+        for (var index = 0; index < actions.length; index += 2) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: actions[index]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: index + 1 < actions.length
+                    ? actions[index + 1]
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+          if (index + 2 < actions.length) const SizedBox(height: 12),
+        ],
       ],
     );
   }
@@ -532,6 +562,73 @@ class _FlowActions extends StatelessWidget {
       context.read<FlowtimeCubit>().finishSession();
       context.go(originTab.location);
     }
+  }
+}
+
+class _FlowActionButton extends StatelessWidget {
+  const _FlowActionButton({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
+    return SizedBox(
+      height: 64,
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(64),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+              side: BorderSide(
+                color: colors.ink.withValues(alpha: 0.08),
+                width: 1,
+              ),
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(64),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+              side: BorderSide(
+                color: colors.ink.withValues(alpha: 0.14),
+                width: 1,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: colors.ink.withValues(alpha: 0.035),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
   }
 }
 

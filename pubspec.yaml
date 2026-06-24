@@ -31,7 +31,7 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/quotes/en/
+    - assets/quotes/en/quotes.json
 
   fonts:
     - family: KaushanScript

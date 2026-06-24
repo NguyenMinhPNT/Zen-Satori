@@ -25,107 +25,125 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final project = context.read<ProjectCubit>().state.selectedProject;
-      if (mounted && project != null && !_started) {
-        _started = true;
-        context.read<PomodoroTimerCubit>().startWork(
-          project.id,
-          locale: Localizations.maybeLocaleOf(context),
-        );
+      if (mounted) {
+        _maybeStartTimer();
       }
     });
+  }
+
+  void _maybeStartTimer() {
+    if (_started) {
+      return;
+    }
+    final project = context.read<ProjectCubit>().state.selectedProject;
+    if (project == null) {
+      return;
+    }
+    _started = true;
+    context.read<PomodoroTimerCubit>().startWork(
+      project.id,
+      locale: Localizations.maybeLocaleOf(context),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.of(context);
-    return Scaffold(
-      backgroundColor: colors.paper,
-      body: SafeArea(
-        child: BlocBuilder<PomodoroTimerCubit, PomodoroTimerState>(
-          builder: (context, state) {
-            final hasProject =
-                context.read<ProjectCubit>().state.selectedProject != null;
-            return Column(
-              children: [
-                ZenHeader(
-                  title: 'Pomodoro',
-                  showBack: false,
-                  trailing: const SizedBox.shrink(),
-                ),
-                const SizedBox(height: 18),
-                if (!hasProject)
-                  Expanded(
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'No Project Selected',
-                              style: kaushan(size: 30),
-                            ),
-                            const SizedBox(height: 12),
-                            FilledButton(
-                              onPressed: () =>
-                                  context.go(HomeTab.projects.location),
-                              child: const Text('Create Project'),
-                            ),
-                          ],
+    return BlocListener<ProjectCubit, ProjectState>(
+      listenWhen: (previous, current) {
+        return previous.selectedProject?.id != current.selectedProject?.id;
+      },
+      listener: (context, state) {
+        _maybeStartTimer();
+      },
+      child: Scaffold(
+        backgroundColor: colors.paper,
+        body: SafeArea(
+          child: BlocBuilder<PomodoroTimerCubit, PomodoroTimerState>(
+            builder: (context, state) {
+              final hasProject =
+                  context.watch<ProjectCubit>().state.selectedProject != null;
+              return Column(
+                children: [
+                  ZenHeader(
+                    title: 'Pomodoro',
+                    showBack: false,
+                    trailing: const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 18),
+                  if (!hasProject)
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'No Project Selected',
+                                style: kaushan(size: 30),
+                              ),
+                              const SizedBox(height: 12),
+                              FilledButton(
+                                onPressed: () =>
+                                    context.go(HomeTab.projects.location),
+                                child: const Text('Create Project'),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 34),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final timerFontSize = (constraints.maxWidth * 0.26)
-                              .clamp(64.0, 112.0);
-                          final quoteHeight = (constraints.maxHeight * 0.32)
-                              .clamp(160.0, 230.0);
-                          return Column(
-                            children: [
-                              SizedBox(
-                                height: quoteHeight,
-                                child: CenteredQuotePanel(
-                                  quote: state.activeQuote,
+                    )
+                  else
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 34),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final timerFontSize = (constraints.maxWidth * 0.26)
+                                .clamp(64.0, 112.0);
+                            final quoteHeight = (constraints.maxHeight * 0.32)
+                                .clamp(160.0, 230.0);
+                            return Column(
+                              children: [
+                                SizedBox(
+                                  height: quoteHeight,
+                                  child: CenteredQuotePanel(
+                                    quote: state.activeQuote,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 14),
-                              Expanded(
-                                child: Center(
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      state.displayTime,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: timerFontSize,
-                                        fontWeight: FontWeight.w500,
-                                        letterSpacing: -1.5,
-                                        height: 0.95,
+                                const SizedBox(height: 14),
+                                Expanded(
+                                  child: Center(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        state.displayTime,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: timerFontSize,
+                                          fontWeight: FontWeight.w500,
+                                          letterSpacing: -1.5,
+                                          height: 0.95,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              _PomodoroTimerActions(
-                                state: state,
-                                originTab: widget.originTab,
-                              ),
-                            ],
-                          );
-                        },
+                                _PomodoroTimerActions(
+                                  state: state,
+                                  originTab: widget.originTab,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

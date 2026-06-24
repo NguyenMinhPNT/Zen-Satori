@@ -38,8 +38,8 @@ class _TimerEntryScreenState extends State<TimerEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedProject = context.read<ProjectCubit>().state.selectedProject;
-    final focusMode = context.read<SettingsCubit>().state.focusMode;
+    final selectedProject = context.watch<ProjectCubit>().state.selectedProject;
+    final focusMode = context.watch<SettingsCubit>().state.focusMode;
     if (selectedProject == null || focusMode == FocusMode.none) {
       return const Scaffold(body: SizedBox.shrink());
     }

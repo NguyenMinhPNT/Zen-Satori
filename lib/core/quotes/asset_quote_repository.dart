@@ -57,16 +57,20 @@ class AssetQuoteRepository implements QuoteRepository {
       final primaryPath = _pathFor(locale);
       try {
         return _decode(await _assetBundle.loadString(primaryPath));
-      } on FlutterError catch (error) {
+      } catch (error, stackTrace) {
         debugPrint('Quote asset load failed for $primaryPath: $error');
+        debugPrintStack(stackTrace: stackTrace);
         if (locale.languageCode != _defaultLocale.languageCode) {
-          return await _loadQuotes(_defaultLocale).catchError((_) {
-            return const <QuoteEntry>[];
-          });
+          try {
+            return await _loadQuotes(_defaultLocale);
+          } catch (fallbackError, fallbackStackTrace) {
+            debugPrint(
+              'Quote asset fallback failed for ${_pathFor(_defaultLocale)}: '
+              '$fallbackError',
+            );
+            debugPrintStack(stackTrace: fallbackStackTrace);
+          }
         }
-        return const <QuoteEntry>[];
-      } on FormatException catch (error) {
-        debugPrint('Quote asset parse failed for $primaryPath: $error');
         return const <QuoteEntry>[];
       }
     });
