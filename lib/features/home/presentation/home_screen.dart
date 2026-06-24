@@ -62,7 +62,7 @@ class _HomeTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = switch (tab) {
-      HomeTab.projects => 'Projects',
+      HomeTab.projects => 'Activity',
       HomeTab.pomodoro => 'Pomodoro',
       HomeTab.guruAi => 'Guru AI',
       HomeTab.flowtime => 'Home',
@@ -177,7 +177,7 @@ class _FocusDashboard extends StatelessWidget {
                     SizedBox(height: compact ? 12 : 28),
                     Text(
                       selectedProject == null
-                          ? 'Create a Project to Begin'
+                          ? 'Create an Activity to Begin'
                           : title,
                       textAlign: TextAlign.center,
                       style: kaushan(size: titleSize),
@@ -211,7 +211,7 @@ class _FocusDashboard extends StatelessWidget {
                           child: FilledButton.icon(
                             onPressed: () => showProjectFormSheet(context),
                             icon: const Icon(Icons.add),
-                            label: const Text('Create Project'),
+                            label: const Text('Create Activity'),
                           ),
                         ),
                       )
@@ -305,7 +305,7 @@ class _ProjectSelector extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Current Project: None',
+                    'Current Activity: None',
                     style: TextStyle(fontSize: 20),
                   ),
                 ),
@@ -321,7 +321,7 @@ class _ProjectSelector extends StatelessWidget {
                       DropdownMenuItem(
                         value: project.id,
                         child: Text(
-                          'Current Project: ${project.title}',
+                          'Current Activity: ${project.title}',
                           style: const TextStyle(fontSize: 18),
                           overflow: TextOverflow.ellipsis,
                         ),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/activity_type.dart';
 import '../../domain/project_status.dart';
 import '../project_cubit.dart';
 
@@ -30,106 +31,160 @@ class _ProjectFormSheet extends StatefulWidget {
 }
 
 class _ProjectFormSheetState extends State<_ProjectFormSheet> {
-  late final TextEditingController _titleController;
-  late final TextEditingController _detailController;
-  late final TextEditingController _dateController;
-  DateTime? _startDate;
-  DateTime? _deadline;
+  late final TextEditingController _nameController;
+  late final TextEditingController _deadlineController;
+  late final TextEditingController _targetHoursController;
+  late final TextEditingController _frequencyCountController;
+  late ActivityType _type;
   late ProjectStatus _status;
+  DateTime? _deadline;
+  ActivityFrequencyPeriod? _frequencyPeriod;
 
   bool get _isEditing => widget.project != null;
 
   @override
   void initState() {
     super.initState();
-    final p = widget.project;
-    _titleController = TextEditingController(text: p?.title ?? '');
-    _detailController = TextEditingController(text: p?.detail ?? '');
-    _startDate = p?.startDate;
-    _deadline = p?.deadline;
-    _status = p != null
-        ? ProjectStatus.fromLabel(p.status)
+    final project = widget.project;
+    _nameController = TextEditingController(text: project?.title ?? '');
+    _deadline = project?.deadline;
+    _deadlineController = TextEditingController(text: _formatDate(_deadline));
+    _targetHoursController = TextEditingController(
+      text: _formatTargetHours(project?.targetMinutes ?? 0),
+    );
+    _frequencyCountController = TextEditingController(
+      text: project?.frequencyCount?.toString() ?? '',
+    );
+    _type = ActivityType.fromStorage(project?.activityType);
+    _status = project != null
+        ? ProjectStatus.fromLabel(project.status)
         : ProjectStatus.ongoing;
-    _dateController = TextEditingController(
-      text: _formatDateRange(_startDate, _deadline),
+    _frequencyPeriod = ActivityFrequencyPeriod.fromStorage(
+      project?.frequencyPeriod,
     );
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _detailController.dispose();
-    _dateController.dispose();
+    _nameController.dispose();
+    _deadlineController.dispose();
+    _targetHoursController.dispose();
+    _frequencyCountController.dispose();
     super.dispose();
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime? date) {
+    if (date == null) {
+      return '';
+    }
     final d = date.day.toString().padLeft(2, '0');
     final m = date.month.toString().padLeft(2, '0');
     return '$d/$m/${date.year}';
   }
 
-  String _formatDateRange(DateTime? start, DateTime? end) {
-    if (start != null && end != null) {
-      return '${_formatDate(start)} → ${_formatDate(end)}';
+  String _formatTargetHours(int targetMinutes) {
+    if (targetMinutes <= 0) {
+      return '';
     }
-    if (start != null) return _formatDate(start);
-    if (end != null) return _formatDate(end);
-    return '';
+    final hours = targetMinutes / 60;
+    final text = hours == hours.roundToDouble()
+        ? hours.toStringAsFixed(0)
+        : hours.toStringAsFixed(1);
+    return text.endsWith('.0') ? text.substring(0, text.length - 2) : text;
   }
 
-  Future<void> _pickDateRange() async {
-    final range = await showDateRangePicker(
+  Future<void> _pickDeadline() async {
+    final picked = await showDatePicker(
       context: context,
       firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-      initialDateRange: _startDate != null && _deadline != null
-          ? DateTimeRange(start: _startDate!, end: _deadline!)
-          : null,
+      lastDate: DateTime(2035),
+      initialDate: _deadline ?? DateTime.now(),
     );
-    if (range != null) {
-      setState(() {
-        _startDate = range.start;
-        _deadline = range.end;
-        _dateController.text = _formatDateRange(_startDate, _deadline);
-      });
+    if (picked == null) {
+      return;
     }
+    setState(() {
+      _deadline = picked;
+      _deadlineController.text = _formatDate(picked);
+    });
+  }
+
+  void _showValidationMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _submit() async {
-    final title = _titleController.text.trim();
-    if (title.isEmpty) return;
+    final title = _nameController.text.trim();
+    if (title.isEmpty) {
+      _showValidationMessage('Name is required.');
+      return;
+    }
 
-    final detail = _detailController.text.trim().isEmpty
-        ? null
-        : _detailController.text.trim();
+    final targetHoursText = _targetHoursController.text.trim();
+    final frequencyCountText = _frequencyCountController.text.trim();
+    final hasFrequencyCount = frequencyCountText.isNotEmpty;
+    final hasFrequencyPeriod = _frequencyPeriod != null;
+
+    if (hasFrequencyCount != hasFrequencyPeriod) {
+      _showValidationMessage('Frequency needs both a count and period.');
+      return;
+    }
+
+    double? targetHours;
+    if (targetHoursText.isNotEmpty) {
+      targetHours = double.tryParse(targetHoursText.replaceAll(',', '.'));
+      if (targetHours == null || targetHours <= 0) {
+        _showValidationMessage('Target Hours must be a positive number.');
+        return;
+      }
+    }
+
+    int? frequencyCount;
+    if (hasFrequencyCount) {
+      frequencyCount = int.tryParse(frequencyCountText);
+      if (frequencyCount == null || frequencyCount <= 0) {
+        _showValidationMessage(
+          'Frequency count must be a positive whole number.',
+        );
+        return;
+      }
+    }
 
     final cubit = context.read<ProjectCubit>();
     if (_isEditing) {
       await cubit.updateProject(
         id: widget.project!.id,
         title: title,
+        type: _type,
         status: _status,
-        detail: detail,
-        startDate: _startDate,
         deadline: _deadline,
+        targetMinutes: targetHours == null ? null : (targetHours * 60).round(),
+        frequencyCount: frequencyCount,
+        frequencyPeriod: _frequencyPeriod,
       );
     } else {
       await cubit.createProject(
         title: title,
-        detail: detail,
-        startDate: _startDate,
+        type: _type,
         deadline: _deadline,
+        targetMinutes: targetHours == null ? null : (targetHours * 60).round(),
+        frequencyCount: frequencyCount,
+        frequencyPeriod: _frequencyPeriod,
       );
     }
-    if (mounted) Navigator.of(context).pop();
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Project'),
+        title: const Text('Delete Activity'),
         content: Text(
           'Delete "${widget.project!.title}"? This cannot be undone.',
         ),
@@ -148,7 +203,9 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
     );
     if (confirmed == true && mounted) {
       await context.read<ProjectCubit>().deleteProject(widget.project!.id);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -162,92 +219,231 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
         20,
         MediaQuery.viewInsetsOf(context).bottom + 24,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            _isEditing ? 'Edit Project' : 'New Project',
-            textAlign: TextAlign.center,
-            style: kaushan(),
-          ),
-          const SizedBox(height: 18),
-          TextField(
-            controller: _titleController,
-            textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(
-              labelText: 'Project title',
-              border: OutlineInputBorder(),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              _isEditing ? 'Edit Activity' : 'Create Activity',
+              textAlign: TextAlign.center,
+              style: kaushan(),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _detailController,
-            textInputAction: TextInputAction.newline,
-            maxLines: 3,
-            minLines: 1,
-            decoration: const InputDecoration(
-              labelText: 'Detail Project',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          if (_isEditing) ...[
-            const SizedBox(height: 12),
-            DropdownButtonFormField<ProjectStatus>(
-              initialValue: _status,
+            const SizedBox(height: 18),
+            TextField(
+              controller: _nameController,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
-                labelText: 'Status',
+                labelText: 'Name',
+                hintText: 'e.g. Reading, Neom',
                 border: OutlineInputBorder(),
               ),
-              items: ProjectStatus.values.map((status) {
-                return DropdownMenuItem<ProjectStatus>(
-                  value: status,
-                  child: Text(status.label),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value == null) return;
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Type',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 10),
+            _ActivityTypeSelector(
+              selectedType: _type,
+              onChanged: (type) {
                 setState(() {
-                  _status = value;
+                  _type = type;
                 });
               },
             ),
+            if (_isEditing) ...[
+              const SizedBox(height: 16),
+              DropdownButtonFormField<ProjectStatus>(
+                initialValue: _status,
+                decoration: const InputDecoration(
+                  labelText: 'Status',
+                  border: OutlineInputBorder(),
+                ),
+                items: ProjectStatus.values.map((status) {
+                  return DropdownMenuItem<ProjectStatus>(
+                    value: status,
+                    child: Text(status.label),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() {
+                    _status = value;
+                  });
+                },
+              ),
+            ],
+            const SizedBox(height: 16),
+            if (_type == ActivityType.project) ...[
+              TextField(
+                controller: _deadlineController,
+                readOnly: true,
+                onTap: _pickDeadline,
+                decoration: InputDecoration(
+                  labelText: 'Deadline',
+                  hintText: 'Choose a date',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: _deadline != null
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () => setState(() {
+                            _deadline = null;
+                            _deadlineController.clear();
+                          }),
+                        )
+                      : const Icon(Icons.calendar_today),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _targetHoursController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Target Hours',
+                  hintText: 'Optional',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ] else ...[
+              const Text(
+                'Frequency',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _frequencyCountController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Count',
+                        hintText: 'e.g. 3',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonFormField<ActivityFrequencyPeriod>(
+                      initialValue: _frequencyPeriod,
+                      decoration: const InputDecoration(
+                        labelText: 'Period',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ActivityFrequencyPeriod.values.map((period) {
+                        return DropdownMenuItem<ActivityFrequencyPeriod>(
+                          value: period,
+                          child: Text(period.label),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _frequencyPeriod = value;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 18),
+            FilledButton(
+              onPressed: _submit,
+              child: Text(_isEditing ? 'Update Activity' : 'Create Activity'),
+            ),
+            if (_isEditing) ...[
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _confirmDelete,
+                style: TextButton.styleFrom(foregroundColor: colors.clay),
+                child: const Text('Delete Activity'),
+              ),
+            ],
           ],
-          const SizedBox(height: 12),
-          TextField(
-            controller: _dateController,
-            readOnly: true,
-            onTap: _pickDateRange,
-            decoration: InputDecoration(
-              labelText: 'Date',
-              border: const OutlineInputBorder(),
-              hintText: 'Start date → Deadline',
-              suffixIcon: _startDate != null || _deadline != null
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () => setState(() {
-                        _startDate = null;
-                        _deadline = null;
-                        _dateController.clear();
-                      }),
-                    )
-                  : const Icon(Icons.calendar_today),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActivityTypeSelector extends StatelessWidget {
+  const _ActivityTypeSelector({
+    required this.selectedType,
+    required this.onChanged,
+  });
+
+  final ActivityType selectedType;
+  final ValueChanged<ActivityType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.paperWarm.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.ink.withValues(alpha: 0.12)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Row(
+          children: [
+            for (final type in ActivityType.values)
+              Expanded(
+                child: _ActivityTypeOption(
+                  type: type,
+                  selected: selectedType == type,
+                  onTap: () => onChanged(type),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActivityTypeOption extends StatelessWidget {
+  const _ActivityTypeOption({
+    required this.type,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ActivityType type;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Material(
+        color: selected ? colors.ink : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              type.label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: selected ? colors.paper : colors.ink,
+              ),
             ),
           ),
-          const SizedBox(height: 18),
-          FilledButton(
-            onPressed: _submit,
-            child: Text(_isEditing ? 'Update Project' : 'Create Project'),
-          ),
-          if (_isEditing) ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _confirmDelete,
-              style: TextButton.styleFrom(foregroundColor: colors.clay),
-              child: const Text('Delete Project'),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

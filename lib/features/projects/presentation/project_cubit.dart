@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/database/app_database.dart';
+import '../domain/activity_type.dart';
 import '../domain/project_repository.dart';
 import '../domain/project_status.dart';
 
@@ -112,15 +113,23 @@ class ProjectCubit extends Cubit<ProjectState> {
 
   Future<void> createProject({
     required String title,
+    ActivityType type = ActivityType.project,
     String? detail,
     DateTime? startDate,
     DateTime? deadline,
+    int? targetMinutes,
+    int? frequencyCount,
+    ActivityFrequencyPeriod? frequencyPeriod,
   }) async {
     final id = await _repository.createProject(
       title: title,
+      type: type,
       detail: detail,
       startDate: startDate,
       deadline: deadline,
+      targetMinutes: targetMinutes,
+      frequencyCount: frequencyCount,
+      frequencyPeriod: frequencyPeriod,
     );
     emit(state.copyWith(selectedProjectId: id));
   }
@@ -128,18 +137,26 @@ class ProjectCubit extends Cubit<ProjectState> {
   Future<void> updateProject({
     required int id,
     required String title,
+    required ActivityType type,
     required ProjectStatus status,
     String? detail,
     DateTime? startDate,
     DateTime? deadline,
+    int? targetMinutes,
+    int? frequencyCount,
+    ActivityFrequencyPeriod? frequencyPeriod,
   }) {
     return _repository.updateProject(
       id: id,
       title: title,
+      type: type,
       status: status,
       detail: detail,
       startDate: startDate,
       deadline: deadline,
+      targetMinutes: targetMinutes,
+      frequencyCount: frequencyCount,
+      frequencyPeriod: frequencyPeriod,
     );
   }
 

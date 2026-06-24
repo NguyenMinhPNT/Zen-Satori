@@ -10,11 +10,15 @@ part 'app_database.g.dart';
 class Projects extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
+  TextColumn get activityType =>
+      text().withDefault(const Constant('project'))();
   IntColumn get targetMinutes => integer().withDefault(const Constant(0))();
   TextColumn get status => text().withDefault(const Constant('ongoing'))();
   TextColumn get detail => text().nullable()();
   DateTimeColumn get startDate => dateTime().nullable()();
   DateTimeColumn get deadline => dateTime().nullable()();
+  IntColumn get frequencyCount => integer().nullable()();
+  TextColumn get frequencyPeriod => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
@@ -55,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -95,6 +99,31 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(focusSessions, focusSessions.mode);
           }
           await m.createTable(sessionInterruptions);
+        }
+        if (from < 5) {
+          final projectColumns = await customSelect(
+            'PRAGMA table_info(projects)',
+          ).get();
+          final columnNames = projectColumns
+              .map((row) => row.data['name'] as String?)
+              .whereType<String>()
+              .toSet();
+
+          if (!columnNames.contains('activity_type')) {
+            await m.addColumn(projects, projects.activityType);
+          }
+          if (!columnNames.contains('frequency_count')) {
+            await m.addColumn(projects, projects.frequencyCount);
+          }
+          if (!columnNames.contains('frequency_period')) {
+            await m.addColumn(projects, projects.frequencyPeriod);
+          }
+
+          await customStatement('''
+            UPDATE projects
+            SET activity_type = 'project'
+            WHERE activity_type IS NULL OR TRIM(activity_type) = ''
+          ''');
         }
       },
     );

@@ -9,6 +9,7 @@ import 'package:zen_satori/core/quotes/quote_category.dart';
 import 'package:zen_satori/core/quotes/quote_entry.dart';
 import 'package:zen_satori/core/quotes/quote_repository.dart';
 import 'package:zen_satori/core/widgets/enso_button.dart';
+import 'package:zen_satori/features/projects/domain/activity_type.dart';
 import 'package:zen_satori/features/projects/domain/project_repository.dart';
 import 'package:zen_satori/features/settings/domain/app_preferences.dart';
 import 'package:zen_satori/features/settings/domain/focus_mode.dart';
@@ -49,18 +50,18 @@ void main() {
     await tester.pumpWidget(harness.app);
     await _pumpFrames(tester);
 
-    expect(find.text('Create a Project to Begin'), findsOneWidget);
+    expect(find.text('Create an Activity to Begin'), findsOneWidget);
     expect(find.byType(EnsoButton), findsOneWidget);
     await _disposeHarness(tester);
   });
 
   testWidgets('Drawer opens from top-level pages', (tester) async {
     final routes = <String, String>{
-      '/home?tab=flowtime': 'Create a Project to Begin',
+      '/home?tab=flowtime': 'Create an Activity to Begin',
       '/achievements': 'Path to Satori',
       '/stats': 'Insights',
       '/settings': 'Sounds (Zen Bell)',
-      '/about': 'Focus with a quieter mind.',
+      '/about': 'Master your mind flow.',
     };
 
     for (final entry in routes.entries) {
@@ -118,7 +119,7 @@ void main() {
     await tester.tap(find.text('About'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Focus with a quieter mind.'), findsOneWidget);
+    expect(find.text('Master your mind flow.'), findsOneWidget);
     await _disposeHarness(tester);
   });
 
@@ -128,7 +129,7 @@ void main() {
     await tester.pumpWidget(harness.app);
     await _pumpFrames(tester);
 
-    await tester.tap(find.text('Projects'));
+    await tester.tap(find.text('Activity'));
     await tester.pumpAndSettle();
     expect(find.text('Search'), findsOneWidget);
 
@@ -197,7 +198,9 @@ void main() {
     expect(harness.preferences.focusMode, FocusMode.pomodoro);
     expect(find.text('25:00'), findsOneWidget);
     expect(
-      find.text('"The successful warrior is the average man, with laser-like focus."'),
+      find.text(
+        '"The successful warrior is the average man, with laser-like focus."',
+      ),
       findsOneWidget,
     );
     expect(find.text('Bruce Lee'), findsOneWidget);
@@ -229,7 +232,10 @@ void main() {
 
     expect(quoteText.style?.fontStyle, FontStyle.italic);
     expect(quoteText.style?.fontFamily, isNot('KaushanScript'));
-    expect(tester.getTopLeft(authorFinder).dy, greaterThan(tester.getTopLeft(quoteFinder).dy));
+    expect(
+      tester.getTopLeft(authorFinder).dy,
+      greaterThan(tester.getTopLeft(quoteFinder).dy),
+    );
 
     await _disposeHarness(tester);
   });
@@ -313,6 +319,88 @@ void main() {
     await cubit.close();
     await database.close();
   });
+
+  testWidgets('Create Activity sheet shows name, type, and project fields', (
+    tester,
+  ) async {
+    final harness = await _createHarness(initialLocation: '/home?tab=projects');
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Create Activity'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create Activity'), findsWidgets);
+    expect(find.text('Name'), findsOneWidget);
+    expect(find.text('Type'), findsOneWidget);
+    expect(find.text('Project'), findsOneWidget);
+    expect(find.text('Routine'), findsOneWidget);
+    expect(find.text('Deadline'), findsOneWidget);
+    expect(find.text('Target Hours'), findsOneWidget);
+    expect(find.text('Detail Project'), findsNothing);
+    expect(find.text('Date'), findsNothing);
+
+    await _disposeHarness(tester);
+  });
+
+  testWidgets('Routine toggle swaps project goals for frequency fields', (
+    tester,
+  ) async {
+    final harness = await _createHarness(initialLocation: '/home?tab=projects');
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Create Activity'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Routine'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Frequency'), findsOneWidget);
+    expect(find.text('Count'), findsOneWidget);
+    expect(find.text('Period'), findsOneWidget);
+    expect(find.text('Deadline'), findsNothing);
+    expect(find.text('Target Hours'), findsNothing);
+
+    await _disposeHarness(tester);
+  });
+
+  testWidgets('Edit Activity sheet keeps status field', (tester) async {
+    final harness = await _createHarness(initialLocation: '/home?tab=projects');
+    await harness.projectRepository.createProject(title: 'Reading');
+
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Reading (0m)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit Activity'), findsOneWidget);
+    expect(find.text('Status'), findsOneWidget);
+    expect(find.text('Detail Project'), findsNothing);
+
+    await _disposeHarness(tester);
+  });
+
+  testWidgets('Routine activity can still launch a Flowtime session', (
+    tester,
+  ) async {
+    final harness = await _createHarness();
+    await harness.projectRepository.createProject(
+      title: 'Daily Reading',
+      type: ActivityType.routine,
+      frequencyCount: 3,
+      frequencyPeriod: ActivityFrequencyPeriod.week,
+    );
+
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.byType(EnsoButton));
+    await _pumpFrames(tester);
+
+    expect(find.text('Session Journal'), findsOneWidget);
+    await _disposeHarness(tester);
+  });
 }
 
 class _Harness {
@@ -378,7 +466,10 @@ class _FakeQuoteRepository implements QuoteRepository {
   final QuoteEntry quote;
 
   @override
-  Future<List<QuoteEntry>> getQuotes({QuoteCategory? category, Locale? locale}) {
+  Future<List<QuoteEntry>> getQuotes({
+    QuoteCategory? category,
+    Locale? locale,
+  }) {
     if (category != null && category != quote.category) {
       return Future.value(const <QuoteEntry>[]);
     }

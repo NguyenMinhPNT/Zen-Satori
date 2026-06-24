@@ -1,5 +1,5 @@
 enum HomeTab {
-  projects('projects', 'Projects'),
+  projects('projects', 'Activity'),
   pomodoro('pomodoro', 'Pomodoro'),
   guruAi('guru-ai', 'Guru AI'),
   flowtime('flowtime', 'Flowtime'),

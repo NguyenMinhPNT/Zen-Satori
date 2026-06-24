@@ -24,7 +24,7 @@ class ProjectsScreen extends StatelessWidget {
       child: Column(
         children: [
           ZenHeader(
-            title: 'Projects',
+            title: 'Activity',
             showBack: false,
             leading: Builder(
               builder: (context) {
@@ -118,7 +118,7 @@ class ProjectsTabContent extends StatelessWidget {
                                 ),
                               ),
                               child: IconButton(
-                                tooltip: 'Add project',
+                                tooltip: 'Add activity',
                                 onPressed: () => showProjectFormSheet(context),
                                 icon: const Icon(Icons.add, size: 30),
                               ),
@@ -186,29 +186,36 @@ class _EmptyProjects extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(AppAssets.bamboo, width: 92),
-            const SizedBox(height: 10),
-            Text('No Projects Yet', style: kaushan(size: 30)),
-            const SizedBox(height: 10),
-            const Text(
-              'Create your first focus project to unlock sessions and stats.',
-              textAlign: TextAlign.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(28),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(AppAssets.bamboo, width: 92),
+                  const SizedBox(height: 10),
+                  Text('No Activities Yet', style: kaushan(size: 30)),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Create your first focus activity to unlock sessions and stats.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 18),
+                  FilledButton.icon(
+                    onPressed: onCreate,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create Activity'),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 18),
-            FilledButton.icon(
-              onPressed: onCreate,
-              icon: const Icon(Icons.add),
-              label: const Text('Create Project'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

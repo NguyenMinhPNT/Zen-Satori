@@ -30,6 +30,18 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _activityTypeMeta = const VerificationMeta(
+    'activityType',
+  );
+  @override
+  late final GeneratedColumn<String> activityType = GeneratedColumn<String>(
+    'activity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('project'),
+  );
   static const VerificationMeta _targetMinutesMeta = const VerificationMeta(
     'targetMinutes',
   );
@@ -83,6 +95,28 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _frequencyCountMeta = const VerificationMeta(
+    'frequencyCount',
+  );
+  @override
+  late final GeneratedColumn<int> frequencyCount = GeneratedColumn<int>(
+    'frequency_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _frequencyPeriodMeta = const VerificationMeta(
+    'frequencyPeriod',
+  );
+  @override
+  late final GeneratedColumn<String> frequencyPeriod = GeneratedColumn<String>(
+    'frequency_period',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -109,11 +143,14 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
   List<GeneratedColumn> get $columns => [
     id,
     title,
+    activityType,
     targetMinutes,
     status,
     detail,
     startDate,
     deadline,
+    frequencyCount,
+    frequencyPeriod,
     createdAt,
     updatedAt,
   ];
@@ -139,6 +176,15 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
       );
     } else if (isInserting) {
       context.missing(_titleMeta);
+    }
+    if (data.containsKey('activity_type')) {
+      context.handle(
+        _activityTypeMeta,
+        activityType.isAcceptableOrUnknown(
+          data['activity_type']!,
+          _activityTypeMeta,
+        ),
+      );
     }
     if (data.containsKey('target_minutes')) {
       context.handle(
@@ -171,6 +217,24 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
       context.handle(
         _deadlineMeta,
         deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
+      );
+    }
+    if (data.containsKey('frequency_count')) {
+      context.handle(
+        _frequencyCountMeta,
+        frequencyCount.isAcceptableOrUnknown(
+          data['frequency_count']!,
+          _frequencyCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('frequency_period')) {
+      context.handle(
+        _frequencyPeriodMeta,
+        frequencyPeriod.isAcceptableOrUnknown(
+          data['frequency_period']!,
+          _frequencyPeriodMeta,
+        ),
       );
     }
     if (data.containsKey('created_at')) {
@@ -206,6 +270,10 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         DriftSqlType.string,
         data['${effectivePrefix}title'],
       )!,
+      activityType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}activity_type'],
+      )!,
       targetMinutes: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}target_minutes'],
@@ -225,6 +293,14 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
       deadline: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deadline'],
+      ),
+      frequencyCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}frequency_count'],
+      ),
+      frequencyPeriod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}frequency_period'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -246,21 +322,27 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
 class Project extends DataClass implements Insertable<Project> {
   final int id;
   final String title;
+  final String activityType;
   final int targetMinutes;
   final String status;
   final String? detail;
   final DateTime? startDate;
   final DateTime? deadline;
+  final int? frequencyCount;
+  final String? frequencyPeriod;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Project({
     required this.id,
     required this.title,
+    required this.activityType,
     required this.targetMinutes,
     required this.status,
     this.detail,
     this.startDate,
     this.deadline,
+    this.frequencyCount,
+    this.frequencyPeriod,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -269,6 +351,7 @@ class Project extends DataClass implements Insertable<Project> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
+    map['activity_type'] = Variable<String>(activityType);
     map['target_minutes'] = Variable<int>(targetMinutes);
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || detail != null) {
@@ -280,6 +363,12 @@ class Project extends DataClass implements Insertable<Project> {
     if (!nullToAbsent || deadline != null) {
       map['deadline'] = Variable<DateTime>(deadline);
     }
+    if (!nullToAbsent || frequencyCount != null) {
+      map['frequency_count'] = Variable<int>(frequencyCount);
+    }
+    if (!nullToAbsent || frequencyPeriod != null) {
+      map['frequency_period'] = Variable<String>(frequencyPeriod);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -289,6 +378,7 @@ class Project extends DataClass implements Insertable<Project> {
     return ProjectsCompanion(
       id: Value(id),
       title: Value(title),
+      activityType: Value(activityType),
       targetMinutes: Value(targetMinutes),
       status: Value(status),
       detail: detail == null && nullToAbsent
@@ -300,6 +390,12 @@ class Project extends DataClass implements Insertable<Project> {
       deadline: deadline == null && nullToAbsent
           ? const Value.absent()
           : Value(deadline),
+      frequencyCount: frequencyCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(frequencyCount),
+      frequencyPeriod: frequencyPeriod == null && nullToAbsent
+          ? const Value.absent()
+          : Value(frequencyPeriod),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -313,11 +409,14 @@ class Project extends DataClass implements Insertable<Project> {
     return Project(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
+      activityType: serializer.fromJson<String>(json['activityType']),
       targetMinutes: serializer.fromJson<int>(json['targetMinutes']),
       status: serializer.fromJson<String>(json['status']),
       detail: serializer.fromJson<String?>(json['detail']),
       startDate: serializer.fromJson<DateTime?>(json['startDate']),
       deadline: serializer.fromJson<DateTime?>(json['deadline']),
+      frequencyCount: serializer.fromJson<int?>(json['frequencyCount']),
+      frequencyPeriod: serializer.fromJson<String?>(json['frequencyPeriod']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -328,11 +427,14 @@ class Project extends DataClass implements Insertable<Project> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
+      'activityType': serializer.toJson<String>(activityType),
       'targetMinutes': serializer.toJson<int>(targetMinutes),
       'status': serializer.toJson<String>(status),
       'detail': serializer.toJson<String?>(detail),
       'startDate': serializer.toJson<DateTime?>(startDate),
       'deadline': serializer.toJson<DateTime?>(deadline),
+      'frequencyCount': serializer.toJson<int?>(frequencyCount),
+      'frequencyPeriod': serializer.toJson<String?>(frequencyPeriod),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -341,21 +443,31 @@ class Project extends DataClass implements Insertable<Project> {
   Project copyWith({
     int? id,
     String? title,
+    String? activityType,
     int? targetMinutes,
     String? status,
     Value<String?> detail = const Value.absent(),
     Value<DateTime?> startDate = const Value.absent(),
     Value<DateTime?> deadline = const Value.absent(),
+    Value<int?> frequencyCount = const Value.absent(),
+    Value<String?> frequencyPeriod = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Project(
     id: id ?? this.id,
     title: title ?? this.title,
+    activityType: activityType ?? this.activityType,
     targetMinutes: targetMinutes ?? this.targetMinutes,
     status: status ?? this.status,
     detail: detail.present ? detail.value : this.detail,
     startDate: startDate.present ? startDate.value : this.startDate,
     deadline: deadline.present ? deadline.value : this.deadline,
+    frequencyCount: frequencyCount.present
+        ? frequencyCount.value
+        : this.frequencyCount,
+    frequencyPeriod: frequencyPeriod.present
+        ? frequencyPeriod.value
+        : this.frequencyPeriod,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -363,6 +475,9 @@ class Project extends DataClass implements Insertable<Project> {
     return Project(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
+      activityType: data.activityType.present
+          ? data.activityType.value
+          : this.activityType,
       targetMinutes: data.targetMinutes.present
           ? data.targetMinutes.value
           : this.targetMinutes,
@@ -370,6 +485,12 @@ class Project extends DataClass implements Insertable<Project> {
       detail: data.detail.present ? data.detail.value : this.detail,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
+      frequencyCount: data.frequencyCount.present
+          ? data.frequencyCount.value
+          : this.frequencyCount,
+      frequencyPeriod: data.frequencyPeriod.present
+          ? data.frequencyPeriod.value
+          : this.frequencyPeriod,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -380,11 +501,14 @@ class Project extends DataClass implements Insertable<Project> {
     return (StringBuffer('Project(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('activityType: $activityType, ')
           ..write('targetMinutes: $targetMinutes, ')
           ..write('status: $status, ')
           ..write('detail: $detail, ')
           ..write('startDate: $startDate, ')
           ..write('deadline: $deadline, ')
+          ..write('frequencyCount: $frequencyCount, ')
+          ..write('frequencyPeriod: $frequencyPeriod, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -395,11 +519,14 @@ class Project extends DataClass implements Insertable<Project> {
   int get hashCode => Object.hash(
     id,
     title,
+    activityType,
     targetMinutes,
     status,
     detail,
     startDate,
     deadline,
+    frequencyCount,
+    frequencyPeriod,
     createdAt,
     updatedAt,
   );
@@ -409,11 +536,14 @@ class Project extends DataClass implements Insertable<Project> {
       (other is Project &&
           other.id == this.id &&
           other.title == this.title &&
+          other.activityType == this.activityType &&
           other.targetMinutes == this.targetMinutes &&
           other.status == this.status &&
           other.detail == this.detail &&
           other.startDate == this.startDate &&
           other.deadline == this.deadline &&
+          other.frequencyCount == this.frequencyCount &&
+          other.frequencyPeriod == this.frequencyPeriod &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -421,32 +551,41 @@ class Project extends DataClass implements Insertable<Project> {
 class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<int> id;
   final Value<String> title;
+  final Value<String> activityType;
   final Value<int> targetMinutes;
   final Value<String> status;
   final Value<String?> detail;
   final Value<DateTime?> startDate;
   final Value<DateTime?> deadline;
+  final Value<int?> frequencyCount;
+  final Value<String?> frequencyPeriod;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const ProjectsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
+    this.activityType = const Value.absent(),
     this.targetMinutes = const Value.absent(),
     this.status = const Value.absent(),
     this.detail = const Value.absent(),
     this.startDate = const Value.absent(),
     this.deadline = const Value.absent(),
+    this.frequencyCount = const Value.absent(),
+    this.frequencyPeriod = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
   ProjectsCompanion.insert({
     this.id = const Value.absent(),
     required String title,
+    this.activityType = const Value.absent(),
     this.targetMinutes = const Value.absent(),
     this.status = const Value.absent(),
     this.detail = const Value.absent(),
     this.startDate = const Value.absent(),
     this.deadline = const Value.absent(),
+    this.frequencyCount = const Value.absent(),
+    this.frequencyPeriod = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : title = Value(title),
@@ -455,22 +594,28 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   static Insertable<Project> custom({
     Expression<int>? id,
     Expression<String>? title,
+    Expression<String>? activityType,
     Expression<int>? targetMinutes,
     Expression<String>? status,
     Expression<String>? detail,
     Expression<DateTime>? startDate,
     Expression<DateTime>? deadline,
+    Expression<int>? frequencyCount,
+    Expression<String>? frequencyPeriod,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
+      if (activityType != null) 'activity_type': activityType,
       if (targetMinutes != null) 'target_minutes': targetMinutes,
       if (status != null) 'status': status,
       if (detail != null) 'detail': detail,
       if (startDate != null) 'start_date': startDate,
       if (deadline != null) 'deadline': deadline,
+      if (frequencyCount != null) 'frequency_count': frequencyCount,
+      if (frequencyPeriod != null) 'frequency_period': frequencyPeriod,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -479,22 +624,28 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   ProjectsCompanion copyWith({
     Value<int>? id,
     Value<String>? title,
+    Value<String>? activityType,
     Value<int>? targetMinutes,
     Value<String>? status,
     Value<String?>? detail,
     Value<DateTime?>? startDate,
     Value<DateTime?>? deadline,
+    Value<int?>? frequencyCount,
+    Value<String?>? frequencyPeriod,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
     return ProjectsCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
+      activityType: activityType ?? this.activityType,
       targetMinutes: targetMinutes ?? this.targetMinutes,
       status: status ?? this.status,
       detail: detail ?? this.detail,
       startDate: startDate ?? this.startDate,
       deadline: deadline ?? this.deadline,
+      frequencyCount: frequencyCount ?? this.frequencyCount,
+      frequencyPeriod: frequencyPeriod ?? this.frequencyPeriod,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -508,6 +659,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
+    }
+    if (activityType.present) {
+      map['activity_type'] = Variable<String>(activityType.value);
     }
     if (targetMinutes.present) {
       map['target_minutes'] = Variable<int>(targetMinutes.value);
@@ -524,6 +678,12 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     if (deadline.present) {
       map['deadline'] = Variable<DateTime>(deadline.value);
     }
+    if (frequencyCount.present) {
+      map['frequency_count'] = Variable<int>(frequencyCount.value);
+    }
+    if (frequencyPeriod.present) {
+      map['frequency_period'] = Variable<String>(frequencyPeriod.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -538,11 +698,14 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     return (StringBuffer('ProjectsCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('activityType: $activityType, ')
           ..write('targetMinutes: $targetMinutes, ')
           ..write('status: $status, ')
           ..write('detail: $detail, ')
           ..write('startDate: $startDate, ')
           ..write('deadline: $deadline, ')
+          ..write('frequencyCount: $frequencyCount, ')
+          ..write('frequencyPeriod: $frequencyPeriod, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1882,11 +2045,14 @@ typedef $$ProjectsTableCreateCompanionBuilder =
     ProjectsCompanion Function({
       Value<int> id,
       required String title,
+      Value<String> activityType,
       Value<int> targetMinutes,
       Value<String> status,
       Value<String?> detail,
       Value<DateTime?> startDate,
       Value<DateTime?> deadline,
+      Value<int?> frequencyCount,
+      Value<String?> frequencyPeriod,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
@@ -1894,11 +2060,14 @@ typedef $$ProjectsTableUpdateCompanionBuilder =
     ProjectsCompanion Function({
       Value<int> id,
       Value<String> title,
+      Value<String> activityType,
       Value<int> targetMinutes,
       Value<String> status,
       Value<String?> detail,
       Value<DateTime?> startDate,
       Value<DateTime?> deadline,
+      Value<int?> frequencyCount,
+      Value<String?> frequencyPeriod,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -1945,6 +2114,11 @@ class $$ProjectsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get activityType => $composableBuilder(
+    column: $table.activityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get targetMinutes => $composableBuilder(
     column: $table.targetMinutes,
     builder: (column) => ColumnFilters(column),
@@ -1967,6 +2141,16 @@ class $$ProjectsTableFilterComposer
 
   ColumnFilters<DateTime> get deadline => $composableBuilder(
     column: $table.deadline,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get frequencyCount => $composableBuilder(
+    column: $table.frequencyCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get frequencyPeriod => $composableBuilder(
+    column: $table.frequencyPeriod,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2025,6 +2209,11 @@ class $$ProjectsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get activityType => $composableBuilder(
+    column: $table.activityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get targetMinutes => $composableBuilder(
     column: $table.targetMinutes,
     builder: (column) => ColumnOrderings(column),
@@ -2047,6 +2236,16 @@ class $$ProjectsTableOrderingComposer
 
   ColumnOrderings<DateTime> get deadline => $composableBuilder(
     column: $table.deadline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get frequencyCount => $composableBuilder(
+    column: $table.frequencyCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get frequencyPeriod => $composableBuilder(
+    column: $table.frequencyPeriod,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2076,6 +2275,11 @@ class $$ProjectsTableAnnotationComposer
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
+  GeneratedColumn<String> get activityType => $composableBuilder(
+    column: $table.activityType,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get targetMinutes => $composableBuilder(
     column: $table.targetMinutes,
     builder: (column) => column,
@@ -2092,6 +2296,16 @@ class $$ProjectsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deadline =>
       $composableBuilder(column: $table.deadline, builder: (column) => column);
+
+  GeneratedColumn<int> get frequencyCount => $composableBuilder(
+    column: $table.frequencyCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get frequencyPeriod => $composableBuilder(
+    column: $table.frequencyPeriod,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2155,21 +2369,27 @@ class $$ProjectsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
+                Value<String> activityType = const Value.absent(),
                 Value<int> targetMinutes = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String?> detail = const Value.absent(),
                 Value<DateTime?> startDate = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
+                Value<int?> frequencyCount = const Value.absent(),
+                Value<String?> frequencyPeriod = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => ProjectsCompanion(
                 id: id,
                 title: title,
+                activityType: activityType,
                 targetMinutes: targetMinutes,
                 status: status,
                 detail: detail,
                 startDate: startDate,
                 deadline: deadline,
+                frequencyCount: frequencyCount,
+                frequencyPeriod: frequencyPeriod,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -2177,21 +2397,27 @@ class $$ProjectsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String title,
+                Value<String> activityType = const Value.absent(),
                 Value<int> targetMinutes = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String?> detail = const Value.absent(),
                 Value<DateTime?> startDate = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
+                Value<int?> frequencyCount = const Value.absent(),
+                Value<String?> frequencyPeriod = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => ProjectsCompanion.insert(
                 id: id,
                 title: title,
+                activityType: activityType,
                 targetMinutes: targetMinutes,
                 status: status,
                 detail: detail,
                 startDate: startDate,
                 deadline: deadline,
+                frequencyCount: frequencyCount,
+                frequencyPeriod: frequencyPeriod,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

@@ -80,14 +80,14 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'No Project Selected',
+                                'No Activity Selected',
                                 style: kaushan(size: 30),
                               ),
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () =>
                                     context.go(HomeTab.projects.location),
-                                child: const Text('Create Project'),
+                                child: const Text('Create Activity'),
                               ),
                             ],
                           ),
