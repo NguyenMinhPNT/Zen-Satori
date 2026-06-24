@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,7 +27,6 @@ class _SplashScreenState extends State<SplashScreen> {
       _isNavigating = true;
     });
 
-    await HapticFeedback.lightImpact();
     await preferences.setHasBegun(true);
 
     if (!mounted) return;
@@ -88,20 +86,19 @@ class _SplashScreenState extends State<SplashScreen> {
                       ],
                     ),
                     const Spacer(),
-                    TextButton(
-                      onPressed: _isNavigating ? null : _begin,
-                      style: TextButton.styleFrom(
-                        foregroundColor: colors.ink,
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      child: Text(
-                        'Tap here to Begin',
-                        style: kaushan(
-                          size: buttonFontSize,
-                          color: const Color.fromARGB(255, 221, 14, 14),
+                    MouseRegion(
+                      cursor: _isNavigating
+                          ? SystemMouseCursors.basic
+                          : SystemMouseCursors.click,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _isNavigating ? null : _begin,
+                        child: Text(
+                          'Tap here to Begin',
+                          style: kaushan(
+                            size: buttonFontSize,
+                            color: const Color.fromARGB(255, 221, 14, 14),
+                          ),
                         ),
                       ),
                     ),

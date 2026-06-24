@@ -13,15 +13,15 @@ class AppPreferences {
   static const focusModeKey = 'focusMode';
   static const scheduleRemindersEnabledKey = 'scheduleRemindersEnabled';
 
-  bool get hasBegun => _prefs.getBool(hasBegunKey) ?? false;
-  bool get soundEnabled => _prefs.getBool(soundEnabledKey) ?? true;
-  bool get vibrateEnabled => _prefs.getBool(vibrateEnabledKey) ?? true;
+  bool get hasBegun => _readBool(hasBegunKey, false);
+  bool get soundEnabled => _readBool(soundEnabledKey, true);
+  bool get vibrateEnabled => _readBool(vibrateEnabledKey, true);
   FocusMode get focusMode {
-    return FocusMode.fromStorage(_prefs.getString(focusModeKey));
+    return FocusMode.fromStorage(_readString(focusModeKey));
   }
 
   bool get scheduleRemindersEnabled {
-    return _prefs.getBool(scheduleRemindersEnabledKey) ?? false;
+    return _readBool(scheduleRemindersEnabledKey, false);
   }
 
   Future<void> setHasBegun(bool value) => _prefs.setBool(hasBegunKey, value);
@@ -39,5 +39,29 @@ class AppPreferences {
 
   Future<void> setScheduleRemindersEnabled(bool value) {
     return _prefs.setBool(scheduleRemindersEnabledKey, value);
+  }
+
+  bool _readBool(String key, bool fallback) {
+    try {
+      final value = _prefs.get(key);
+      if (value is bool) {
+        return value;
+      }
+    } catch (_) {
+      // Fall through to the default when cached data is corrupted.
+    }
+    return fallback;
+  }
+
+  String? _readString(String key) {
+    try {
+      final value = _prefs.get(key);
+      if (value is String) {
+        return value;
+      }
+    } catch (_) {
+      // Fall through to null when cached data is corrupted.
+    }
+    return null;
   }
 }

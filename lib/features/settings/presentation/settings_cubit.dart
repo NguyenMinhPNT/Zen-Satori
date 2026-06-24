@@ -17,6 +17,15 @@ class SettingsState extends Equatable {
   final FocusMode focusMode;
   final bool scheduleRemindersEnabled;
 
+  factory SettingsState.initial(AppPreferences preferences) {
+    return SettingsState(
+      soundEnabled: preferences.soundEnabled,
+      vibrateEnabled: preferences.vibrateEnabled,
+      focusMode: preferences.focusMode,
+      scheduleRemindersEnabled: preferences.scheduleRemindersEnabled,
+    );
+  }
+
   bool get pomodoroModeEnabled => focusMode == FocusMode.pomodoro;
   bool get flowtimeModeEnabled => focusMode == FocusMode.flowtime;
 
@@ -46,14 +55,7 @@ class SettingsState extends Equatable {
 
 class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit(this._preferences)
-    : super(
-        SettingsState(
-          soundEnabled: _preferences.soundEnabled,
-          vibrateEnabled: _preferences.vibrateEnabled,
-          focusMode: _preferences.focusMode,
-          scheduleRemindersEnabled: _preferences.scheduleRemindersEnabled,
-        ),
-      );
+    : super(SettingsState.initial(_preferences));
 
   final AppPreferences _preferences;
 
