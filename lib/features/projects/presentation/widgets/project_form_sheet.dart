@@ -34,11 +34,9 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _deadlineController;
   late final TextEditingController _targetHoursController;
-  late final TextEditingController _frequencyCountController;
   late ActivityType _type;
   late ProjectStatus _status;
   DateTime? _deadline;
-  ActivityFrequencyPeriod? _frequencyPeriod;
 
   bool get _isEditing => widget.project != null;
 
@@ -52,16 +50,10 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
     _targetHoursController = TextEditingController(
       text: _formatTargetHours(project?.targetMinutes ?? 0),
     );
-    _frequencyCountController = TextEditingController(
-      text: project?.frequencyCount?.toString() ?? '',
-    );
     _type = ActivityType.fromStorage(project?.activityType);
     _status = project != null
         ? ProjectStatus.fromLabel(project.status)
         : ProjectStatus.ongoing;
-    _frequencyPeriod = ActivityFrequencyPeriod.fromStorage(
-      project?.frequencyPeriod,
-    );
   }
 
   @override
@@ -69,7 +61,6 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
     _nameController.dispose();
     _deadlineController.dispose();
     _targetHoursController.dispose();
-    _frequencyCountController.dispose();
     super.dispose();
   }
 
@@ -123,31 +114,12 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
     }
 
     final targetHoursText = _targetHoursController.text.trim();
-    final frequencyCountText = _frequencyCountController.text.trim();
-    final hasFrequencyCount = frequencyCountText.isNotEmpty;
-    final hasFrequencyPeriod = _frequencyPeriod != null;
-
-    if (hasFrequencyCount != hasFrequencyPeriod) {
-      _showValidationMessage('Frequency needs both a count and period.');
-      return;
-    }
 
     double? targetHours;
     if (targetHoursText.isNotEmpty) {
       targetHours = double.tryParse(targetHoursText.replaceAll(',', '.'));
       if (targetHours == null || targetHours <= 0) {
         _showValidationMessage('Target Hours must be a positive number.');
-        return;
-      }
-    }
-
-    int? frequencyCount;
-    if (hasFrequencyCount) {
-      frequencyCount = int.tryParse(frequencyCountText);
-      if (frequencyCount == null || frequencyCount <= 0) {
-        _showValidationMessage(
-          'Frequency count must be a positive whole number.',
-        );
         return;
       }
     }
@@ -161,8 +133,8 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
         status: _status,
         deadline: _deadline,
         targetMinutes: targetHours == null ? null : (targetHours * 60).round(),
-        frequencyCount: frequencyCount,
-        frequencyPeriod: _frequencyPeriod,
+        frequencyCount: null,
+        frequencyPeriod: null,
       );
     } else {
       await cubit.createProject(
@@ -170,8 +142,8 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
         type: _type,
         deadline: _deadline,
         targetMinutes: targetHours == null ? null : (targetHours * 60).round(),
-        frequencyCount: frequencyCount,
-        frequencyPeriod: _frequencyPeriod,
+        frequencyCount: null,
+        frequencyPeriod: null,
       );
     }
 
@@ -233,9 +205,11 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
             TextField(
               controller: _nameController,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Name',
-                hintText: 'e.g. Reading, Neom',
+                hintText: _type == ActivityType.project
+                    ? 'e.g. Neom, Blueco'
+                    : 'e.g. Read book',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -309,48 +283,6 @@ class _ProjectFormSheetState extends State<_ProjectFormSheet> {
                   hintText: 'Optional',
                   border: OutlineInputBorder(),
                 ),
-              ),
-            ] else ...[
-              const Text(
-                'Frequency',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _frequencyCountController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Count',
-                        hintText: 'e.g. 3',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<ActivityFrequencyPeriod>(
-                      initialValue: _frequencyPeriod,
-                      decoration: const InputDecoration(
-                        labelText: 'Period',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: ActivityFrequencyPeriod.values.map((period) {
-                        return DropdownMenuItem<ActivityFrequencyPeriod>(
-                          value: period,
-                          child: Text(period.label),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _frequencyPeriod = value;
-                        });
-                      },
-                    ),
-                  ),
-                ],
               ),
             ],
             const SizedBox(height: 18),

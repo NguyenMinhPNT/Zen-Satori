@@ -109,18 +109,16 @@ class ProjectsTabContent extends StatelessWidget {
                         return Padding(
                           padding: const EdgeInsets.only(top: 2, bottom: 6),
                           child: Center(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: colors.paperWarm.withValues(alpha: 0.92),
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: colors.ink.withValues(alpha: 0.12),
-                                ),
-                              ),
+                            child: SizedBox(
+                              width: 88,
+                              height: 88,
                               child: IconButton(
                                 tooltip: 'Add activity',
                                 onPressed: () => showProjectFormSheet(context),
-                                icon: const Icon(Icons.add, size: 30),
+                                icon: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                  size: 44,
+                                ),
                               ),
                             ),
                           ),
@@ -133,7 +131,7 @@ class ProjectsTabContent extends StatelessWidget {
 
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: Image.asset(AppAssets.bamboo, width: 54),
+                        leading: Image.asset(AppAssets.tre, width: 54),
                         title: Text(
                           '${project.title} (${_formatWorkedTime(totalMinutes)})',
                           style: const TextStyle(
@@ -196,7 +194,7 @@ class _EmptyProjects extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(AppAssets.bamboo, width: 92),
+                  Image.asset(AppAssets.tre, width: 92),
                   const SizedBox(height: 10),
                   Text('No Activities Yet', style: kaushan(size: 30)),
                   const SizedBox(height: 10),

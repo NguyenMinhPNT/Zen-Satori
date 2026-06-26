@@ -1,6 +1,6 @@
 abstract final class AppAssets {
   static const splashArtwork = 'assets/images/new background splash screen.png';
-  static const bamboo = 'assets/images/bamboo_clean.png';
+  static const tre = 'assets/images/tre.png';
   static const ensoCircle = 'assets/images/enso circle no background.png';
   static const guruAiNavIcon = 'assets/images/guru_ai_nav_icon.png';
   static const lotus = 'assets/images/lotus.png';
