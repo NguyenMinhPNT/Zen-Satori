@@ -21,14 +21,12 @@ class FlowtimeInterruption extends Equatable {
   const FlowtimeInterruption({
     required this.type,
     required this.label,
-    this.note,
     required this.startedAt,
     this.endedAt,
   });
 
   final SessionInterruptionType type;
   final String label;
-  final String? note;
   final DateTime startedAt;
   final DateTime? endedAt;
 
@@ -39,7 +37,6 @@ class FlowtimeInterruption extends Equatable {
     return FlowtimeInterruption(
       type: type,
       label: label,
-      note: note,
       startedAt: startedAt,
       endedAt: value,
     );
@@ -49,14 +46,13 @@ class FlowtimeInterruption extends Equatable {
     return SessionInterruptionDraft(
       type: type,
       label: label,
-      note: note,
       startedAt: startedAt,
       endedAt: endedAt ?? startedAt,
     );
   }
 
   @override
-  List<Object?> get props => [type, label, note, startedAt, endedAt];
+  List<Object?> get props => [type, label, startedAt, endedAt];
 }
 
 class FlowtimeCompletedBlock extends Equatable {
@@ -421,9 +417,7 @@ class FlowtimeCubit extends Cubit<FlowtimeState> {
   }
 
   void startInterruption({
-    required SessionInterruptionType type,
     required String label,
-    String? note,
   }) {
     if ((state.phase != FlowtimePhase.focusing &&
             state.phase != FlowtimePhase.focusPaused) ||
@@ -435,9 +429,8 @@ class FlowtimeCubit extends Cubit<FlowtimeState> {
       state.copyWith(
         displayNow: now,
         activeInterruption: FlowtimeInterruption(
-          type: type,
+          type: SessionInterruptionType.interruption,
           label: label,
-          note: note,
           startedAt: now,
         ),
       ),

@@ -31,10 +31,7 @@ void main() {
       );
 
       clock.advance(const Duration(minutes: 30));
-      cubit.startInterruption(
-        type: SessionInterruptionType.external,
-        label: 'Slack ping',
-      );
+      cubit.startInterruption(label: 'Phone call');
       clock.advance(const Duration(minutes: 5));
       cubit.endActiveInterruption();
       clock.advance(const Duration(minutes: 10));
@@ -62,15 +59,35 @@ void main() {
       expect(distraction.startedAt, distraction.endedAt);
 
       final interruption = interruptions.firstWhere(
-        (item) => item.type == SessionInterruptionType.external.storageValue,
+        (item) =>
+            item.type == SessionInterruptionType.interruption.storageValue,
       );
-      expect(interruption.type, SessionInterruptionType.external.storageValue);
-      expect(interruption.label, 'Slack ping');
+      expect(
+        interruption.type,
+        SessionInterruptionType.interruption.storageValue,
+      );
+      expect(interruption.label, 'Phone call');
+      expect(interruption.note, equals(null));
 
       await cubit.close();
       await database.close();
     },
   );
+
+  test('SessionInterruptionType still parses legacy interruption values', () {
+    expect(
+      SessionInterruptionType.fromStorage('internal'),
+      SessionInterruptionType.internal,
+    );
+    expect(
+      SessionInterruptionType.fromStorage('external'),
+      SessionInterruptionType.external,
+    );
+    expect(
+      SessionInterruptionType.fromStorage('interruption'),
+      SessionInterruptionType.interruption,
+    );
+  });
 
   test('Flowtime pause still works during break running', () async {
     final database = AppDatabase(NativeDatabase.memory());

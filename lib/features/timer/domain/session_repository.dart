@@ -41,7 +41,6 @@ class SessionRepository {
                 focusSessionId: sessionId,
                 type: interruption.type.storageValue,
                 label: interruption.label,
-                note: Value(interruption.note),
                 startedAt: interruption.startedAt,
                 endedAt: interruption.endedAt,
               ),

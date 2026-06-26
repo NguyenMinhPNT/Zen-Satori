@@ -18,6 +18,7 @@ enum FocusSessionMode {
 
 enum SessionInterruptionType {
   distraction('distraction'),
+  interruption('interruption'),
   internal('internal'),
   external('external');
 
@@ -29,6 +30,8 @@ enum SessionInterruptionType {
     switch (this) {
       case SessionInterruptionType.distraction:
         return 'Distraction';
+      case SessionInterruptionType.interruption:
+        return 'Interruption';
       case SessionInterruptionType.internal:
         return 'Internal';
       case SessionInterruptionType.external:
@@ -42,7 +45,7 @@ enum SessionInterruptionType {
         return type;
       }
     }
-    return SessionInterruptionType.internal;
+    return SessionInterruptionType.interruption;
   }
 }
 
@@ -50,14 +53,12 @@ class SessionInterruptionDraft {
   const SessionInterruptionDraft({
     required this.type,
     required this.label,
-    this.note,
     required this.startedAt,
     required this.endedAt,
   });
 
   final SessionInterruptionType type;
   final String label;
-  final String? note;
   final DateTime startedAt;
   final DateTime endedAt;
 }

@@ -231,6 +231,86 @@ void main() {
     },
   );
 
+  testWidgets('Flowtime interruption sheet uses preset cards and logs on tap', (
+    tester,
+  ) async {
+    final harness = await _createHarness();
+    await harness.projectRepository.createProject(
+      title: 'Morning Practice',
+      targetMinutes: 120,
+    );
+
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.byType(EnsoButton));
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Log Interruption'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('External'), findsNothing);
+    expect(find.text('Internal'), findsNothing);
+    expect(find.text('Short label'), findsNothing);
+    expect(find.text('Note (optional)'), findsNothing);
+    expect(find.text('Restroom'), findsOneWidget);
+    expect(find.text('Phone call'), findsOneWidget);
+
+    await tester.tap(find.text('Phone call'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Active interruption: Phone call'), findsOneWidget);
+    expect(find.text('Interruption in progress'), findsOneWidget);
+    expect(find.text('End Interruption'), findsOneWidget);
+
+    await tester.tap(find.text('End Interruption'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Current block interruptions'), findsOneWidget);
+    expect(find.text('Phone call'), findsOneWidget);
+
+    await _disposeHarness(tester);
+  });
+
+  testWidgets('Flowtime interruption sheet supports custom reasons only when set', (
+    tester,
+  ) async {
+    final harness = await _createHarness();
+    await harness.projectRepository.createProject(
+      title: 'Morning Practice',
+      targetMinutes: 120,
+    );
+
+    await tester.pumpWidget(harness.app);
+    await _pumpFrames(tester);
+
+    await tester.tap(find.byType(EnsoButton));
+    await _pumpFrames(tester);
+
+    await tester.tap(find.text('Log Interruption'));
+    await tester.pumpAndSettle();
+
+    var customReasonButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Log Custom Reason'),
+    );
+    expect(customReasonButton.onPressed, equals(null));
+
+    await tester.enterText(find.byType(TextField), '  Refill tea  ');
+    await tester.pumpAndSettle();
+
+    customReasonButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Log Custom Reason'),
+    );
+    expect(customReasonButton.onPressed, isNot(equals(null)));
+
+    await tester.tap(find.text('Log Custom Reason'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Active interruption: Refill tea'), findsOneWidget);
+
+    await _disposeHarness(tester);
+  });
+
   testWidgets('Pomodoro tab start launches Pomodoro timer and sets mode', (
     tester,
   ) async {

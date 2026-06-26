@@ -6,12 +6,23 @@ import '../../home/presentation/home_tab.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/zen_header.dart';
 import '../../projects/presentation/project_cubit.dart';
-import '../domain/session_models.dart';
 import 'flowtime_cubit.dart';
 
 const _mutedTerracotta = Color(0xFFC27A73);
 const _sageGreen = Color(0xFFA2B59F);
 const _warmBeige = Color(0xFFE5D3B3);
+const _interruptionPresetLabels = <String>[
+  'Restroom',
+  'Phone call',
+  'Doorbell',
+  'Family matter',
+  'Delivery',
+  'Grab water',
+  'Snack break',
+  'Stretch',
+  'Quick errand',
+  'Tech issue',
+];
 
 class FlowtimerScreen extends StatefulWidget {
   const FlowtimerScreen({super.key, required this.originTab});
@@ -359,7 +370,7 @@ class _ActiveInterruptionCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    interruption.type.label,
+                    'Interruption in progress',
                     style: TextStyle(color: colors.inkSoft),
                   ),
                 ],
@@ -400,7 +411,7 @@ class _CurrentInterruptionsCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
-                  '${interruption.type.label}: ${interruption.label}',
+                  interruption.label,
                   style: const TextStyle(height: 1.3),
                 ),
               ),
@@ -604,11 +615,7 @@ class _FlowActions extends StatelessWidget {
       builder: (_) => const _InterruptionSheet(),
     );
     if (draft != null && context.mounted) {
-      cubit.startInterruption(
-        type: draft.type,
-        label: draft.label,
-        note: draft.note,
-      );
+      cubit.startInterruption(label: draft.label);
     }
   }
 
@@ -829,8 +836,7 @@ class _JournalBlockCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    '${interruption.type.label}: ${interruption.label}'
-                    '${interruption.note?.isNotEmpty == true ? ' - ${interruption.note}' : ''}',
+                    interruption.label,
                     style: const TextStyle(height: 1.35),
                   ),
                 ),
@@ -872,14 +878,10 @@ class _OffsetBadge extends StatelessWidget {
 
 class _InterruptionDraft {
   const _InterruptionDraft({
-    required this.type,
     required this.label,
-    this.note,
   });
 
-  final SessionInterruptionType type;
   final String label;
-  final String? note;
 }
 
 class _InterruptionSheet extends StatefulWidget {
@@ -890,84 +892,124 @@ class _InterruptionSheet extends StatefulWidget {
 }
 
 class _InterruptionSheetState extends State<_InterruptionSheet> {
-  final _labelController = TextEditingController();
-  final _noteController = TextEditingController();
-  SessionInterruptionType _type = SessionInterruptionType.external;
+  final _customReasonController = TextEditingController();
 
   @override
   void dispose() {
-    _labelController.dispose();
-    _noteController.dispose();
+    _customReasonController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final colors = AppTheme.of(context);
+    final customReason = _customReasonController.text.trim();
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 20, 20, bottomInset + 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Log Interruption', style: kaushan(size: 28)),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 10,
-            children: [
-              ChoiceChip(
-                label: const Text('External'),
-                selected: _type == SessionInterruptionType.external,
-                onSelected: (_) {
-                  setState(() => _type = SessionInterruptionType.external);
-                },
-              ),
-              ChoiceChip(
-                label: const Text('Internal'),
-                selected: _type == SessionInterruptionType.internal,
-                onSelected: (_) {
-                  setState(() => _type = SessionInterruptionType.internal);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          TextField(
-            controller: _labelController,
-            decoration: const InputDecoration(
-              labelText: 'Short label',
-              hintText: 'Slack ping, urge to check email, phone call...',
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Log Interruption', style: kaushan(size: 28)),
+            const SizedBox(height: 8),
+            Text(
+              'Pick a common reason or add your own.',
+              style: TextStyle(color: colors.inkSoft, height: 1.35),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _noteController,
-            maxLines: 2,
-            decoration: const InputDecoration(labelText: 'Note (optional)'),
-          ),
-          const SizedBox(height: 18),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton(
-              onPressed: () {
-                final label = _labelController.text.trim();
-                if (label.isEmpty) {
-                  return;
-                }
-                Navigator.of(context).pop(
-                  _InterruptionDraft(
-                    type: _type,
-                    label: label,
-                    note: _noteController.text.trim().isEmpty
-                        ? null
-                        : _noteController.text.trim(),
-                  ),
+            const SizedBox(height: 18),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final cardWidth = (constraints.maxWidth - 10) / 2;
+                return Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (final label in _interruptionPresetLabels)
+                      SizedBox(
+                        width: cardWidth,
+                        child: _InterruptionPresetCard(
+                          label: label,
+                          onTap: () {
+                            Navigator.of(context).pop(
+                              _InterruptionDraft(label: label),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
                 );
               },
-              child: const Text('Start Logging'),
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: _customReasonController,
+              onChanged: (_) => setState(() {}),
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                labelText: 'Other reason',
+                hintText: 'Enter a custom interruption reason',
+              ),
+              onSubmitted: (_) {
+                if (customReason.isEmpty) {
+                  return;
+                }
+                Navigator.of(
+                  context,
+                ).pop(_InterruptionDraft(label: customReason));
+              },
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(
+                onPressed: customReason.isEmpty
+                    ? null
+                    : () {
+                        Navigator.of(
+                          context,
+                        ).pop(_InterruptionDraft(label: customReason));
+                      },
+                child: const Text('Log Custom Reason'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InterruptionPresetCard extends StatelessWidget {
+  const _InterruptionPresetCard({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.paperWarm,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.ink.withValues(alpha: 0.1)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w700, height: 1.2),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
