@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_satori/app.dart';
@@ -15,6 +16,7 @@ import 'package:zen_satori/features/settings/domain/app_preferences.dart';
 import 'package:zen_satori/features/settings/domain/focus_mode.dart';
 import 'package:zen_satori/features/timer/domain/session_models.dart';
 import 'package:zen_satori/features/timer/domain/session_repository.dart';
+import 'package:zen_satori/features/timer/presentation/flowtime_cubit.dart';
 import 'package:zen_satori/features/timer/presentation/timer_cubit.dart';
 
 void main() {
@@ -175,8 +177,59 @@ void main() {
 
     expect(harness.preferences.focusMode, FocusMode.flowtime);
     expect(find.text('Session Journal'), findsOneWidget);
+    expect(find.text('Log Distraction'), findsOneWidget);
+    expect(find.text('Log Interruption'), findsOneWidget);
+    expect(find.text('Pause'), findsNothing);
     await _disposeHarness(tester);
   });
+
+  testWidgets(
+    'Flowtime logs distractions in the journal and keeps Pause for break only',
+    (tester) async {
+      final harness = await _createHarness();
+      await harness.projectRepository.createProject(
+        title: 'Morning Practice',
+        targetMinutes: 120,
+      );
+
+      await tester.pumpWidget(harness.app);
+      await _pumpFrames(tester);
+
+      await tester.tap(find.byType(EnsoButton));
+      await _pumpFrames(tester);
+
+      await tester.tap(find.text('Log Distraction'));
+      await _pumpFrames(tester);
+
+      expect(find.text('Current block distractions'), findsOneWidget);
+      expect(find.text('1 distraction logged'), findsOneWidget);
+      expect(find.text('+0m'), findsOneWidget);
+
+      final cubit = BlocProvider.of<FlowtimeCubit>(
+        tester.element(find.byType(Scaffold).first),
+      );
+      await cubit.stopFocusAndSuggestBreak();
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('1 distraction'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+
+      expect(find.text('1 distraction'), findsOneWidget);
+      expect(find.text('+0m'), findsOneWidget);
+      expect(find.text('Pause'), findsNothing);
+
+      cubit.startBreak();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pause'), findsOneWidget);
+      expect(find.text('Log Distraction'), findsNothing);
+      expect(find.text('Log Interruption'), findsNothing);
+
+      await _disposeHarness(tester);
+    },
+  );
 
   testWidgets('Pomodoro tab start launches Pomodoro timer and sets mode', (
     tester,

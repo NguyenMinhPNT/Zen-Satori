@@ -17,6 +17,7 @@ enum FocusSessionMode {
 }
 
 enum SessionInterruptionType {
+  distraction('distraction'),
   internal('internal'),
   external('external');
 
@@ -26,6 +27,8 @@ enum SessionInterruptionType {
 
   String get label {
     switch (this) {
+      case SessionInterruptionType.distraction:
+        return 'Distraction';
       case SessionInterruptionType.internal:
         return 'Internal';
       case SessionInterruptionType.external:

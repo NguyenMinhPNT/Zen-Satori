@@ -76,6 +76,12 @@ class _FlowtimerScreenState extends State<FlowtimerScreen>
         child: BlocBuilder<FlowtimeCubit, FlowtimeState>(
           builder: (context, state) {
             final project = context.read<ProjectCubit>().state.selectedProject;
+            final currentDistractions = _distractionsOnly(
+              state.currentBlockInterruptions,
+            );
+            final currentInterruptions = _nonDistractionInterruptions(
+              state.currentBlockInterruptions,
+            );
             if (project == null) {
               return Column(
                 children: [
@@ -123,10 +129,17 @@ class _FlowtimerScreenState extends State<FlowtimerScreen>
                           interruption: state.activeInterruption!,
                         ),
                       ],
-                      if (state.currentBlockInterruptions.isNotEmpty) ...[
+                      if (currentDistractions.isNotEmpty) ...[
+                        const SizedBox(height: 18),
+                        _CurrentDistractionsCard(
+                          distractions: currentDistractions,
+                          blockStartedAt: state.currentFocusBlockStartedAt,
+                        ),
+                      ],
+                      if (currentInterruptions.isNotEmpty) ...[
                         const SizedBox(height: 18),
                         _CurrentInterruptionsCard(
-                          interruptions: state.currentBlockInterruptions,
+                          interruptions: currentInterruptions,
                         ),
                       ],
                       const SizedBox(height: 18),
@@ -398,6 +411,62 @@ class _CurrentInterruptionsCard extends StatelessWidget {
   }
 }
 
+class _CurrentDistractionsCard extends StatelessWidget {
+  const _CurrentDistractionsCard({
+    required this.distractions,
+    required this.blockStartedAt,
+  });
+
+  final List<FlowtimeInterruption> distractions;
+  final DateTime? blockStartedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
+    final count = distractions.length;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.sage.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors.sage.withValues(alpha: 0.3)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Current block distractions',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '$count distraction${count == 1 ? '' : 's'} logged',
+              style: TextStyle(color: colors.inkSoft, height: 1.3),
+            ),
+            if (blockStartedAt != null) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final distraction in distractions)
+                    _OffsetBadge(
+                      label: _formatOffsetFromBlock(
+                        blockStartedAt!,
+                        distraction.startedAt,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _FlowActions extends StatelessWidget {
   const _FlowActions({required this.state, required this.originTab});
 
@@ -417,8 +486,19 @@ class _FlowActions extends StatelessWidget {
             label: const Text('Take a Break'),
           ),
         ),
-      if (state.phase == FlowtimePhase.focusing ||
-          state.phase == FlowtimePhase.breakRunning)
+      if (state.phase == FlowtimePhase.focusing)
+        _FlowActionButton(
+          child: FilledButton.icon(
+            onPressed: cubit.logDistraction,
+            icon: const Icon(Icons.visibility_off_outlined),
+            label: const Text('Log Distraction'),
+            style: FilledButton.styleFrom(
+              backgroundColor: _sageGreen,
+              foregroundColor: Colors.black,
+            ),
+          ),
+        ),
+      if (state.phase == FlowtimePhase.breakRunning)
         _FlowActionButton(
           child: FilledButton.icon(
             onPressed: cubit.pause,
@@ -657,7 +737,7 @@ class _SessionJournal extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Completed blocks and interruptions stay visible here while the session is open.',
+              'Completed blocks, distractions, and interruptions stay visible here while the session is open.',
               style: TextStyle(color: colors.inkSoft, height: 1.35),
             ),
             const SizedBox(height: 16),
@@ -686,6 +766,8 @@ class _JournalBlockCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.of(context);
+    final distractions = _distractionsOnly(block.interruptions);
+    final interruptions = _nonDistractionInterruptions(block.interruptions);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.paper,
@@ -707,13 +789,43 @@ class _JournalBlockCard extends StatelessWidget {
               style: TextStyle(color: colors.inkSoft),
             ),
             const SizedBox(height: 10),
-            if (block.interruptions.isEmpty)
+            if (distractions.isNotEmpty) ...[
               Text(
-                'No interruptions logged.',
+                '${distractions.length} distraction${distractions.length == 1 ? '' : 's'}',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final distraction in distractions)
+                    _OffsetBadge(
+                      label: _formatOffsetFromBlock(
+                        block.startedAt,
+                        distraction.startedAt,
+                      ),
+                    ),
+                ],
+              ),
+              if (interruptions.isNotEmpty) const SizedBox(height: 12),
+            ],
+            if (interruptions.isEmpty && distractions.isEmpty)
+              Text(
+                'No distractions or interruptions logged.',
                 style: TextStyle(color: colors.inkSoft),
               )
-            else
-              for (final interruption in block.interruptions)
+            else if (interruptions.isNotEmpty) ...[
+              Text(
+                'Interruptions',
+                style: TextStyle(
+                  color: colors.inkSoft,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final interruption in interruptions)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
@@ -722,6 +834,7 @@ class _JournalBlockCard extends StatelessWidget {
                     style: const TextStyle(height: 1.35),
                   ),
                 ),
+            ],
           ],
         ),
       ),
@@ -732,6 +845,28 @@ class _JournalBlockCard extends StatelessWidget {
     final hour = value.hour.toString().padLeft(2, '0');
     final minute = value.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+}
+
+class _OffsetBadge extends StatelessWidget {
+  const _OffsetBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.paper,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: colors.ink.withValues(alpha: 0.1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+      ),
+    );
   }
 }
 
@@ -836,4 +971,27 @@ class _InterruptionSheetState extends State<_InterruptionSheet> {
       ),
     );
   }
+}
+
+List<FlowtimeInterruption> _distractionsOnly(
+  List<FlowtimeInterruption> interruptions,
+) {
+  return interruptions.where((item) => item.isDistraction).toList();
+}
+
+List<FlowtimeInterruption> _nonDistractionInterruptions(
+  List<FlowtimeInterruption> interruptions,
+) {
+  return interruptions.where((item) => !item.isDistraction).toList();
+}
+
+String _formatOffsetFromBlock(DateTime blockStartedAt, DateTime eventTime) {
+  final delta = eventTime.difference(blockStartedAt);
+  final totalMinutes = delta.inMinutes < 0 ? 0 : delta.inMinutes;
+  final hours = totalMinutes ~/ 60;
+  final minutes = totalMinutes % 60;
+  if (hours > 0) {
+    return '+${hours}h ${minutes.toString().padLeft(2, '0')}m';
+  }
+  return '+${minutes}m';
 }

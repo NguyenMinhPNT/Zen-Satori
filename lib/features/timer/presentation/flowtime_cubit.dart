@@ -33,6 +33,7 @@ class FlowtimeInterruption extends Equatable {
   final DateTime? endedAt;
 
   bool get isActive => endedAt == null;
+  bool get isDistraction => type == SessionInterruptionType.distraction;
 
   FlowtimeInterruption end(DateTime value) {
     return FlowtimeInterruption(
@@ -120,6 +121,13 @@ class FlowtimeState extends Equatable {
       phase == FlowtimePhase.breakSuggested ||
       phase == FlowtimePhase.breakRunning ||
       phase == FlowtimePhase.breakPaused;
+  DateTime? get currentFocusBlockStartedAt {
+    if (projectId == null) {
+      return null;
+    }
+    final anchor = focusStartedAt ?? displayNow;
+    return anchor.subtract(focusElapsedBeforePause);
+  }
 
   Duration get focusElapsed {
     if (phase == FlowtimePhase.focusing && focusStartedAt != null) {
@@ -432,6 +440,27 @@ class FlowtimeCubit extends Cubit<FlowtimeState> {
           note: note,
           startedAt: now,
         ),
+      ),
+    );
+  }
+
+  void logDistraction() {
+    if (state.phase != FlowtimePhase.focusing) {
+      return;
+    }
+    final now = _now();
+    emit(
+      state.copyWith(
+        displayNow: now,
+        currentBlockInterruptions: [
+          ...state.currentBlockInterruptions,
+          FlowtimeInterruption(
+            type: SessionInterruptionType.distraction,
+            label: SessionInterruptionType.distraction.label,
+            startedAt: now,
+            endedAt: now,
+          ),
+        ],
       ),
     );
   }

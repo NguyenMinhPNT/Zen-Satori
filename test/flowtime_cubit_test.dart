@@ -10,46 +10,87 @@ import 'package:zen_satori/features/timer/presentation/flowtime_cubit.dart';
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
-  test('Flowtime saves a completed block and its interruptions', () async {
+  test(
+    'Flowtime saves distractions and interruptions in one completed block',
+    () async {
+      final database = AppDatabase(NativeDatabase.memory());
+      final repository = SessionRepository(database);
+      final projectId = await ProjectRepository(
+        database,
+      ).createProject(title: 'Write', targetMinutes: 90);
+      final clock = _MutableClock(DateTime(2026, 6, 12, 9));
+      final cubit = FlowtimeCubit(repository, now: clock.call);
+
+      cubit.startFocus(projectId);
+      clock.advance(const Duration(minutes: 12));
+      cubit.logDistraction();
+      expect(cubit.state.currentBlockInterruptions, hasLength(1));
+      expect(
+        cubit.state.currentBlockInterruptions.single.type,
+        SessionInterruptionType.distraction,
+      );
+
+      clock.advance(const Duration(minutes: 30));
+      cubit.startInterruption(
+        type: SessionInterruptionType.external,
+        label: 'Slack ping',
+      );
+      clock.advance(const Duration(minutes: 5));
+      cubit.endActiveInterruption();
+      clock.advance(const Duration(minutes: 10));
+      await cubit.stopFocusAndSuggestBreak();
+
+      expect(cubit.state.phase, FlowtimePhase.breakSuggested);
+      expect(cubit.state.suggestedBreakMinutes, 10);
+      expect(cubit.state.completedBlocks, hasLength(1));
+
+      final sessions = await repository.getSessions();
+      expect(sessions, hasLength(1));
+      expect(sessions.single.mode, FocusSessionMode.flowtime.storageValue);
+      expect(sessions.single.startedAt, DateTime(2026, 6, 12, 9));
+      expect(sessions.single.endedAt, DateTime(2026, 6, 12, 9, 57));
+      expect(sessions.single.relaxMinutes, 10);
+
+      final interruptions = await repository.getInterruptionsForSession(
+        sessions.single.id,
+      );
+      expect(interruptions, hasLength(2));
+      final distraction = interruptions.firstWhere(
+        (item) => item.type == SessionInterruptionType.distraction.storageValue,
+      );
+      expect(distraction.label, SessionInterruptionType.distraction.label);
+      expect(distraction.startedAt, distraction.endedAt);
+
+      final interruption = interruptions.firstWhere(
+        (item) => item.type == SessionInterruptionType.external.storageValue,
+      );
+      expect(interruption.type, SessionInterruptionType.external.storageValue);
+      expect(interruption.label, 'Slack ping');
+
+      await cubit.close();
+      await database.close();
+    },
+  );
+
+  test('Flowtime pause still works during break running', () async {
     final database = AppDatabase(NativeDatabase.memory());
     final repository = SessionRepository(database);
     final projectId = await ProjectRepository(
       database,
-    ).createProject(title: 'Write', targetMinutes: 90);
-    final clock = _MutableClock(DateTime(2026, 6, 12, 9));
+    ).createProject(title: 'Reset', targetMinutes: 45);
+    final clock = _MutableClock(DateTime(2026, 6, 12, 14));
     final cubit = FlowtimeCubit(repository, now: clock.call);
 
     cubit.startFocus(projectId);
-    clock.advance(const Duration(minutes: 30));
-    cubit.startInterruption(
-      type: SessionInterruptionType.external,
-      label: 'Slack ping',
-    );
-    clock.advance(const Duration(minutes: 5));
-    cubit.endActiveInterruption();
-    clock.advance(const Duration(minutes: 10));
+    clock.advance(const Duration(minutes: 35));
     await cubit.stopFocusAndSuggestBreak();
 
-    expect(cubit.state.phase, FlowtimePhase.breakSuggested);
-    expect(cubit.state.suggestedBreakMinutes, 8);
-    expect(cubit.state.completedBlocks, hasLength(1));
+    cubit.startBreak();
+    clock.advance(const Duration(minutes: 2));
+    cubit.pause();
 
-    final sessions = await repository.getSessions();
-    expect(sessions, hasLength(1));
-    expect(sessions.single.mode, FocusSessionMode.flowtime.storageValue);
-    expect(sessions.single.startedAt, DateTime(2026, 6, 12, 9));
-    expect(sessions.single.endedAt, DateTime(2026, 6, 12, 9, 45));
-    expect(sessions.single.relaxMinutes, 8);
-
-    final interruptions = await repository.getInterruptionsForSession(
-      sessions.single.id,
-    );
-    expect(interruptions, hasLength(1));
-    expect(
-      interruptions.single.type,
-      SessionInterruptionType.external.storageValue,
-    );
-    expect(interruptions.single.label, 'Slack ping');
+    expect(cubit.state.phase, FlowtimePhase.breakPaused);
+    expect(cubit.state.breakRemainingSeconds, 6 * 60);
 
     await cubit.close();
     await database.close();
